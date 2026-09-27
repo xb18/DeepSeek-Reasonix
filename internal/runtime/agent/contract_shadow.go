@@ -36,22 +36,18 @@ func buildShadowContract(input string, receipts []evidence.Receipt, plan *planco
 			todos = r.Todos
 		}
 	}
-	// Todo titles restate the plan's steps, so they only become requirements
-	// when no plan supplied the real acceptance criteria.
+	// A todo is the model's own breakdown of the work, not a criterion anyone
+	// accepted, so it is recorded without deciding completion, and marking it
+	// done proves nothing. Unfinished todos are the readiness gate's to hold.
 	if plan == nil {
 		for i, todo := range todos {
-			c.AddRequirement(fmt.Sprintf("t%d", i+1), todo.Content, true)
+			c.AddRequirement(fmt.Sprintf("t%d", i+1), todo.Content, false)
 		}
 	}
 	for _, r := range receipts {
 		c.Observe(r)
 		resolveCitedCriteria(c, r)
 		resolveBlockedCriteria(c, r)
-	}
-	for i, todo := range todos {
-		if todo.Status == "completed" {
-			c.Resolve(fmt.Sprintf("t%d", i+1), taskcontract.Satisfied)
-		}
 	}
 	return c
 }

@@ -370,7 +370,7 @@ func checkLabel(check taskcontract.Check) string {
 }
 
 func verdictOf(rep Report, c *taskcontract.Contract) Verdict {
-	declared := c != nil && (len(c.Requirements) > 0 || len(c.Checks) > 0)
+	declared := c != nil && (slices.ContainsFunc(c.Requirements, func(r taskcontract.Requirement) bool { return r.Required }) || len(c.Checks) > 0)
 	switch {
 	// Nothing declared, nothing changed, nothing claimed. Checks may well have
 	// run, but a check reports on the tree, not on what this turn delivered,

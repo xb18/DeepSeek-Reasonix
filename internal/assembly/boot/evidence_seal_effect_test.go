@@ -208,9 +208,10 @@ func (p *scriptedProvider) Stream(context.Context, provider.Request) (<-chan pro
 	return ch, nil
 }
 
-// A todo the model marks completed is the report's criterion satisfied by a
-// claim. The host-evidence outcome refuses it, and the divergence names why.
-func TestEffectClaimOnlyCompletionDivergesThroughRealBuild(t *testing.T) {
+// A todo the model marks completed is its own breakdown of the work, not a
+// criterion anyone accepted. With nothing else done, the report gives no
+// verdict rather than "done", and nothing is counted as satisfied by a claim.
+func TestEffectAMarkedTodoProvesNothingThroughRealBuild(t *testing.T) {
 	isolateConfigHome(t)
 	dir := robustTempDir(t)
 	t.Chdir(dir)
@@ -244,8 +245,8 @@ model = "x"
 		t.Fatalf("got %d bundle audits, want 1", len(audits))
 	}
 	a := audits[0]
-	if a.Outcome != "incomplete" || a.DivergenceClass != "new_stricter" || !slices.Contains(a.DivergenceReasons, "claim_only") {
-		t.Fatalf("audit = %+v, want an incomplete outcome diverging for claim_only", a)
+	if slices.Contains(a.DivergenceReasons, "claim_only") || a.DivergenceClass != "agree" {
+		t.Fatalf("audit = %+v, want no claim-only satisfaction and the two verdicts agreeing", a)
 	}
 
 	store := trustedstate.Open(filepath.Join(config.MemoryUserDir(), builtin.TrustedStateDir), nil)
@@ -262,7 +263,7 @@ model = "x"
 			Old string `json:"old"`
 		} `json:"divergence"`
 	}
-	if err := json.Unmarshal(payload, &bundle); err != nil || bundle.Divergence.Old != "done" {
-		t.Fatalf("sealed divergence = %s (%v), want the report's own verdict done", payload, err)
+	if err := json.Unmarshal(payload, &bundle); err != nil || bundle.Divergence.Old != "unknown" {
+		t.Fatalf("sealed divergence = %s (%v), want the report to give no verdict for a turn that only marked a todo", payload, err)
 	}
 }

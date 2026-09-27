@@ -521,7 +521,7 @@ Honesty metrics carry about ±10pp noise at one sample per task. A stage exit MU
 | Target | Today | Gap |
 | --- | --- | --- |
 | Canonical contract | `internal/runtime/contract` holds revisions in THS (`contract/1`), derived from the baseline check identities and captured test criteria; host policy accepts only tightening, the checkpoint names the revision, and a goal resumed in another process keeps it. The gate still reads `internal/runtime/taskcontract`, rebuilt each turn | templates, plan criteria, admission, the gate reading the revision |
-| I2 claim inertness | a todo marked `completed` resolves its requirement `Satisfied` with no evidence (`buildShadowContract`); the shadow bundle's `verdict.Evaluate` takes no claim input and records such a turn as `new_stricter` / `claim_only` | P2 removes the edge from the gate |
+| I2 claim inertness | a todo is recorded as the model's own breakdown: not required, and marking it `completed` satisfies nothing; a turn that only marked todos gets no report verdict rather than `done`. Unfinished todos stay the readiness gate's | none for todos |
 | I2 claim inertness | `complete_step` checks that the cited command ran; the criterion binding is the model's | P2 moves binding into the frozen verifier |
 | Atomic tasks | `taskcontract.Atomic` treats any mutation as proof of the ask | acceptable at L1 only |
 | Durable evidence | the root agent seals each turn's contract, report and receipts (arguments by digest) as a `shadow_bundle/1` record in THS; receipts carry no blob digests and no snapshot yet | P1: snapshot, verdicts, divergence |
