@@ -337,3 +337,48 @@ func TestDigestFileOfAMissingPathFails(t *testing.T) {
 		t.Fatal("digest of a missing file reported ok")
 	}
 }
+
+func TestPowerShellDiscoveryDoesNotWaitOnEachHungAliasInSeries(t *testing.T) {
+	release := make(chan struct{})
+	defer close(release)
+	h := hostWith(nil, nil, 300*time.Millisecond)
+	h.winPS = []string{`C:\a\pwsh.exe`, `C:\b\pwsh.exe`, `C:\c\pwsh.exe`}
+	h.launches = func(string) bool { <-release; return true }
+	begin := time.Now()
+	if _, ok := h.powerShell([]string{"pwsh"}); ok {
+		t.Fatal("a hung alias must not count as a PowerShell that starts")
+	}
+	if took := time.Since(begin); took > 2*time.Second {
+		t.Fatalf("discovery took %v behind hung aliases, want one budget", took)
+	}
+}
+
+func TestPowerShellDiscoveryKeepsPreferenceOrder(t *testing.T) {
+	h := hostWith(nil, nil, time.Second)
+	h.winPS = []string{`C:\a\pwsh.exe`, `C:\b\pwsh.exe`}
+	h.launches = func(p string) bool {
+		if p == `C:\a\pwsh.exe` {
+			time.Sleep(100 * time.Millisecond)
+		}
+		return true
+	}
+	if sh, ok := h.powerShell([]string{"pwsh"}); !ok || sh.Path != `C:\a\pwsh.exe` {
+		t.Fatalf("got %v %v, want the preferred candidate", sh, ok)
+	}
+}
+
+func TestResolveGivesUpOnALookupNoProbeBudgetCovers(t *testing.T) {
+	release := make(chan struct{})
+	defer close(release)
+	h := hostWith(nil, nil, 100*time.Millisecond)
+	h.lookPath = func(string) (string, error) { <-release; return "", os.ErrNotExist }
+	var warn strings.Builder
+	begin := time.Now()
+	sh := resolveWithin(h, "auto", "", &warn)
+	if took := time.Since(begin); took > 3*time.Second {
+		t.Fatalf("resolution took %v behind a hung lookup", took)
+	}
+	if sh.Kind != ShellBash || !strings.Contains(warn.String(), "did not finish") {
+		t.Fatalf("got %+v with warning %q, want the bare bash and a warning", sh, warn.String())
+	}
+}

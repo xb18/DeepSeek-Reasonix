@@ -99,22 +99,29 @@ func currentHost() shellHost {
 	return shellHost{runtime.GOOS, exec.LookPath, fileExists, windowsBashCandidates(), windowsPowerShellCandidates(), probeBash, isWindowsWSLBash, powerShellLaunches, nil}
 }
 
+// powerShell proves the first PowerShell that starts, sharing bash's budget so
+// aliases that never answer cost one budget in total, not a launch timeout each.
 func (h shellHost) powerShell(order []string) (Shell, bool) {
+	var cands []string
 	for _, name := range order {
 		for _, p := range h.winPS {
 			base := strings.ToLower(pathBase(p))
 			if base != strings.ToLower(name) && strings.TrimSuffix(base, ".exe") != strings.ToLower(name) {
 				continue
 			}
-			if h.exists(p) && h.launches(p) {
-				return Shell{Kind: ShellPowerShell, Path: p}, true
+			if h.exists(p) {
+				cands = append(cands, p)
 			}
 		}
-		if p, err := h.lookPath(name); err == nil && h.launches(p) {
-			return Shell{Kind: ShellPowerShell, Path: p}, true
+		if p, err := h.lookPath(name); err == nil {
+			cands = append(cands, p)
 		}
 	}
-	return Shell{}, false
+	path, ok := h.firstProven(cands, h.launches, func(string) {})
+	if !ok {
+		return Shell{}, false
+	}
+	return Shell{Kind: ShellPowerShell, Path: path}, true
 }
 
 func (h shellHost) auto(warn io.Writer) Shell {
