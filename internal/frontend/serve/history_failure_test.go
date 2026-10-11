@@ -71,7 +71,7 @@ func TestHistoryDoesNotMarkABackgroundStartFailed(t *testing.T) {
 // show the words. While the recogniser missed a block, a reopened transcript
 // showed the user saying the host's mid-turn instructions to themselves.
 func TestHistoryShowsAStoredSteerAsWhatWasTyped(t *testing.T) {
-	stored := agent.WorkspaceBlock(`D:\Somewhere`, "git") + "\n\n" +
+	stored := agent.WorkspaceBlock(`D:\Somewhere`, "git", nil) + "\n\n" +
 		sessionstore.MidTurnSteerPrefix + "\n" + "最后再报一下今天的日期"
 	out := historyMessages([]provider.Message{{Role: provider.RoleUser, Content: stored}})
 	if len(out) != 1 {

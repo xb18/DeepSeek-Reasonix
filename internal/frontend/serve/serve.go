@@ -87,6 +87,9 @@ type Server struct {
 	// stance is the hub's Ask/Auto/YOLO posture, shared by every pane it drives.
 	// Nil for a server outside a hub, which speaks only for itself.
 	stance *approvalStance
+	// siblings lists the other local panes open on the same workspace, set by
+	// the hub; nil for a server outside one.
+	siblings func(self *Server) []*Server
 	// resolver is what every rebuild of this pane resolves models through, set
 	// by the hub. Nil leaves boot reading this machine's own config.
 	resolver provider.Resolver

@@ -28,6 +28,7 @@ type delegationInputs struct {
 	store        *delegation.SubagentStore
 	session      sessionRuntime
 	bashEnforced func() bool
+	extraRoots   []string
 }
 
 // delegation builds the task tool and the skill sub-agent runner. Wired after
@@ -79,6 +80,7 @@ func (w roleWiring) taskTool(in delegationInputs) *delegation.TaskTool {
 		HooksForRole:      func(role string) agent.ToolHooks { return w.hooks.ForRole(role) },
 	}).
 		WithTranscripts(in.store, in.root, in.modelName, in.entry.Effort).
+		WithExtraRoots(in.extraRoots).
 		WithTranscriptIdentityResolver(in.sub.identity).
 		WithMaxSubagentDepth(in.sub.maxDepth).
 		WithDeliveryProfile(in.delivery).
@@ -95,26 +97,27 @@ func (w roleWiring) taskTool(in delegationInputs) *delegation.TaskTool {
 func (w roleWiring) skillRunOptions(in delegationInputs) func(context.Context, int, *provider.Pricing, int, int) agent.Options {
 	return func(sctx context.Context, steps int, price *provider.Pricing, ctxWin, childDepth int) agent.Options {
 		return agent.Options{
-			MaxSteps:          steps,
-			Temperature:       w.cfg.Agent.Temperature,
-			Pricing:           price,
-			UsageSource:       event.UsageSourceSubagent,
-			Gate:              w.gate,
-			ContextWindow:     ctxWin,
-			RecentKeep:        w.cfg.Agent.RecentKeep,
-			CompactionBudgets: compactionBudgets(w.cfg),
-			CompactRatio:      w.cfg.Agent.CompactRatio,
-			ContextEditing:    w.cfg.Agent.ContextEditing,
-			ArchiveDir:        w.roots.ArchiveDir(),
-			KeepPolicy:        w.keep,
-			ResponseLanguage:  langpref.ResponseLanguageFromContext(sctx),
-			ReasoningLanguage: langpref.ReasoningLanguageFromContext(sctx),
-			SubagentDepth:     childDepth,
-			MaxSubagentDepth:  in.sub.maxDepth,
-			DeliveryProfile:   in.delivery,
-			Ablation:          in.opts.Ablation,
-			WorkspaceLease:    in.session.lease,
-			Hooks:             w.hooks.ForRole(skillSubagentRole(sctx)),
+			MaxSteps:            steps,
+			Temperature:         w.cfg.Agent.Temperature,
+			Pricing:             price,
+			UsageSource:         event.UsageSourceSubagent,
+			Gate:                w.gate,
+			ContextWindow:       ctxWin,
+			RecentKeep:          w.cfg.Agent.RecentKeep,
+			CompactionBudgets:   compactionBudgets(w.cfg),
+			CompactRatio:        w.cfg.Agent.CompactRatio,
+			ContextEditing:      w.cfg.Agent.ContextEditing,
+			ArchiveDir:          w.roots.ArchiveDir(),
+			KeepPolicy:          w.keep,
+			ResponseLanguage:    langpref.ResponseLanguageFromContext(sctx),
+			ReasoningLanguage:   langpref.ReasoningLanguageFromContext(sctx),
+			SubagentDepth:       childDepth,
+			MaxSubagentDepth:    in.sub.maxDepth,
+			DeliveryProfile:     in.delivery,
+			Ablation:            in.opts.Ablation,
+			WorkspaceLease:      in.session.lease,
+			ExtraWorkspaceRoots: in.extraRoots,
+			Hooks:               w.hooks.ForRole(skillSubagentRole(sctx)),
 		}
 	}
 }

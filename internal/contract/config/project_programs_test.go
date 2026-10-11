@@ -164,7 +164,7 @@ func TestWorkspaceGrantsApplyToTheirWorkspaceOnly(t *testing.T) {
 	home := testenv.TempDir(t)
 	root := testenv.TempDir(t)
 	other := testenv.TempDir(t)
-	extra := testenv.TempDir(t)
+	extra := tempAside(t)()
 	t.Setenv("REASONIX_HOME", home)
 	store := NewProjectGrantStore(home)
 	if err := store.Update(root, func(g ProjectGrant) (ProjectGrant, error) {
@@ -178,7 +178,7 @@ func TestWorkspaceGrantsApplyToTheirWorkspaceOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Contains(cfg.Permissions.Allow, "Bash(go test:*)") || !slices.Contains(cfg.Sandbox.AllowWrite, extra) {
+	if !slices.Contains(cfg.Permissions.Allow, "Bash(go test:*)") || !slices.Contains(cfg.WriteRootsForRoot(root), extra) {
 		t.Fatalf("permissions = %+v sandbox = %+v, want the workspace's grants", cfg.Permissions, cfg.Sandbox)
 	}
 	elsewhere, err := LoadForRootReadOnly(other)

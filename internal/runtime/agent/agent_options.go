@@ -125,6 +125,10 @@ type Options struct {
 	// the workspace before and after it. Set it only for an agent no other
 	// foreground writer runs beside; empty falls back to WriteWorkspaceRoot.
 	ObserveRoot string
+	// ExtraWorkspaceRoots are granted folders that count as the workspace beside
+	// WriteWorkspaceRoot: observed for changes and part of the work product, so
+	// a write there owes verification like one at the root.
+	ExtraWorkspaceRoots []string
 	// WorkspaceScanLimit is a test seam: it can only lower the walk bound.
 	// Zero is the production limit.
 	WorkspaceScanLimit int

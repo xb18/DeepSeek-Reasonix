@@ -239,7 +239,18 @@ func (c *Controller) SaveSandboxSettings(in SandboxSettings) error {
 	cfg.Sandbox.Bash = bash
 	cfg.Sandbox.Network = in.Network
 	cfg.Sandbox.WorkspaceRoot = strings.TrimSpace(in.WorkspaceRoot)
-	cfg.Sandbox.AllowWrite = trimmedList(in.AllowWrite)
+	allow := trimmedList(in.AllowWrite)
+	for _, entry := range allow {
+		if slices.Contains(cfg.Sandbox.AllowWrite, entry) {
+			continue
+		}
+		if dir := config.ExpandVars(entry); filepath.IsAbs(dir) {
+			if code, refused := cfg.Roots().FolderGrantRefusal(dir); refused {
+				return &WorkspaceRootError{Code: code, Path: entry}
+			}
+		}
+	}
+	cfg.Sandbox.AllowWrite = allow
 	protect := in.ProtectChangedFiles
 	cfg.Tools.ProtectChangedFiles = &protect
 	return cfg.SaveTo(path)

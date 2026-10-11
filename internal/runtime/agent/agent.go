@@ -10,6 +10,7 @@ import (
 	"reasonix/internal/runtime/langpref"
 	"reasonix/internal/runtime/usecap"
 	"reasonix/internal/state/sessionstore"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -486,7 +487,7 @@ func (a *Agent) withTurnPreferences(input string) string {
 		}
 	}
 	input = langpref.WithReasoningLanguage(input, lang)
-	input = WithWorkspace(input, a.writeWorkspaceRoot, a.workspaceVCS)
+	input = WithWorkspace(input, a.writeWorkspaceRoot, a.workspaceVCS, a.extraRoots)
 	// The frozen role setting rides the per-turn <execution-policy>, not a marker.
 	return input
 }
@@ -666,6 +667,7 @@ func New(prov provider.Provider, tools *tool.Registry, session *sessionstore.Ses
 			classifierTaskText:      opts.ClassifierTaskText,
 			writeWorkspaceRoot:      strings.TrimSpace(opts.WriteWorkspaceRoot),
 			observeRoot:             opts.observeRoot(),
+			extraRoots:              slices.Clone(opts.ExtraWorkspaceRoots),
 			workspaceScanLimit:      opts.WorkspaceScanLimit,
 			renderRoot:              strings.TrimSpace(opts.RenderRoot),
 			workspaceVCS:            strings.TrimSpace(opts.WorkspaceVCS),

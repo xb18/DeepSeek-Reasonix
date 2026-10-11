@@ -240,6 +240,7 @@ func (h *Hub) Adopt(srv *Server, bc *Broadcaster) (*Runtime, error) {
 	srv.stance = h.stance
 	srv.page = h.opts.Page
 	srv.resolver = h.opts.ProviderResolver
+	srv.siblings = h.sameRootServers
 	// A posture the person named is the one every later pane inherits until
 	// someone changes it on the composer. A default is read per folder, so each
 	// pane derives its own.
@@ -256,6 +257,18 @@ func (h *Hub) Adopt(srv *Server, bc *Broadcaster) (*Runtime, error) {
 	rt := &Runtime{ID: h.nextID(), Root: srv.Controller().WorkspaceRoot(), Server: srv, Events: bc, leases: leases}
 	h.publish(rt)
 	return rt, nil
+}
+
+// sameRootServers lists the other local panes open on self's workspace.
+func (h *Hub) sameRootServers(self *Server) []*Server {
+	root := self.Controller().WorkspaceRoot()
+	var out []*Server
+	for _, rt := range h.localRuntimes() {
+		if rt.Server != nil && rt.Server != self && rt.Server.Controller().WorkspaceRoot() == root {
+			out = append(out, rt.Server)
+		}
+	}
+	return out
 }
 
 // ownSession makes "a runtime owns the session it writes" true however the

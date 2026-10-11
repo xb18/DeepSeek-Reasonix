@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync/atomic"
 )
@@ -173,6 +174,24 @@ func ForbiddenReadPaths(broad bool) []string {
 	out := CredentialFilePaths()
 	if broad {
 		out = append(out, SensitiveHomeDirs()...)
+	}
+	return out
+}
+
+// CredentialDirs are the directories that hold credential files: ~/.ssh and
+// ~/.gnupg, and the parent of every exact credential path (~/.aws,
+// ~/.config/gcloud). A folder that is one of these, sits inside one or contains
+// one gives its holder a write path to the keys.
+func CredentialDirs() []string {
+	home := credentialHome()
+	if home == "" {
+		return nil
+	}
+	out := []string{filepath.Join(home, ".ssh"), filepath.Join(home, ".gnupg")}
+	for _, p := range credentialExactPaths(home) {
+		if dir := filepath.Dir(p); dir != home && !slices.Contains(out, dir) {
+			out = append(out, dir)
+		}
 	}
 	return out
 }

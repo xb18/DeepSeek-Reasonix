@@ -123,6 +123,14 @@ func build(ctx context.Context, opts Options) (*BuildResult, error) {
 	return b.freeze(ctrl)
 }
 
+// workspaceExtraRoots is the one list of folders that count as the workspace
+// beside the root: the granted extra roots and this session's --add-dir folders.
+// The executor and every sub-agent it spawns read it, so a write in one is
+// observed the same way whoever made it.
+func (b *builder) workspaceExtraRoots() []string {
+	return appendUniquePaths(b.cfg.ExtraRoots(), b.additionalDirs...)
+}
+
 // retireUnownedSidecars restores adopted clients and closes fresh sidecars when
 // the build fails before the extension snapshot takes ownership.
 func (b *builder) retireUnownedSidecars() {
@@ -336,7 +344,7 @@ func (b *builder) wireTools() error {
 	}
 	t.taskTool, t.skillRun = t.roles.delegation(delegationInputs{opts: opts, sub: t.sub, exec: b.execProv, entry: b.model.entry,
 		modelName: b.model.name, root: root, maxSteps: t.maxSteps, delivery: b.model.delivery, store: subagentStore,
-		session: b.session, bashEnforced: env.bash.Enforce})
+		session: b.session, bashEnforced: env.bash.Enforce, extraRoots: b.workspaceExtraRoots()})
 	b.addIsolation()
 	registerSessionTools(t.reg, opts.Ablation, b.roots, b.session.dir, b.prompt.memory.Store)
 
@@ -452,7 +460,7 @@ func (b *builder) executor() *agent.Agent {
 		// Reserving writes at the executor entry covers every writer, late MCP
 		// adds included, without wrapping tool schemas.
 		WriteScheduler:     t.sub.scheduler,
-		WriteWorkspaceRoot: b.root, WorkspaceScanLimit: b.opts.WorkspaceScanLimit, WorkspaceVCS: b.prompt.workspaceVCS, RenderRoot: renderRoot(t.browser, entry, b.root),
+		WriteWorkspaceRoot: b.root, ExtraWorkspaceRoots: b.workspaceExtraRoots(), WorkspaceScanLimit: b.opts.WorkspaceScanLimit, WorkspaceVCS: b.prompt.workspaceVCS, RenderRoot: renderRoot(t.browser, entry, b.root),
 		ProjectChecks: b.prompt.projectChecks, ProjectSensitivePaths: b.prompt.sensitivePaths,
 		EvidenceSeal:                 t.env.evidenceSeal,
 		AgentPreset:                  b.model.preset,

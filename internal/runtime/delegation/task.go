@@ -12,6 +12,7 @@ import (
 	"reasonix/internal/runtime/writeclaim"
 	"reasonix/internal/state/sessionstore"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -82,6 +83,7 @@ type TaskTool struct {
 	resolveProvider               func(modelRef, effort string) (provider.Provider, *provider.Pricing, int, error)
 	transcripts                   *SubagentStore
 	workspaceRoot                 string
+	extraRoots                    []string
 	baseModel                     string
 	baseEffort                    string
 	identityProfile               func(modelRef, effort string) (string, string)
@@ -210,6 +212,13 @@ func (t *TaskTool) WithTranscripts(store *SubagentStore, workspaceRoot, baseMode
 	t.workspaceRoot = strings.TrimSpace(workspaceRoot)
 	t.baseModel = strings.TrimSpace(baseModel)
 	t.baseEffort = strings.TrimSpace(baseEffort)
+	return t
+}
+
+// WithExtraRoots names the granted folders that count as the workspace for what
+// a child's scan observes, the same list the executor reads.
+func (t *TaskTool) WithExtraRoots(roots []string) *TaskTool {
+	t.extraRoots = slices.Clone(roots)
 	return t
 }
 
@@ -891,28 +900,29 @@ func (t *TaskTool) runReadOnlySubSession(ctx context.Context, prompt string, sub
 // must stay uniform across those paths — add new fields here, not at call sites.
 func (t *TaskTool) subagentOptions(ctx context.Context, maxSteps int, pricing *provider.Pricing, ctxWin, childDepth int, recoveryTaskID string, mutationObserver *checkpoint.MutationObserver) agent.Options {
 	opts := agent.Options{
-		MaxSteps:          maxSteps,
-		Temperature:       t.temperature,
-		Pricing:           pricing,
-		UsageSource:       event.UsageSourceSubagent,
-		Gate:              t.gate,
-		ContextWindow:     ctxWin,
-		RecentKeep:        t.recentKeep,
-		CompactionBudgets: t.budgets,
-		CompactRatio:      t.compactRatio,
-		ArchiveDir:        t.archiveDir,
-		KeepPolicy:        t.keepPolicy,
-		ResponseLanguage:  langpref.ResponseLanguageFromContext(ctx),
-		ReasoningLanguage: langpref.ReasoningLanguageFromContext(ctx),
-		SubagentDepth:     childDepth,
-		MaxSubagentDepth:  t.maxDepth(),
-		DeliveryProfile:   t.deliveryProfile,
-		Ablation:          t.ablation,
-		WorkspaceLease:    t.workspaceLease,
-		RecoveryGate:      t.recoveryGate,
-		RecoveryAgentID:   "subagent",
-		RecoveryTaskID:    recoveryTaskID,
-		MutationObserver:  mutationObserver,
+		MaxSteps:            maxSteps,
+		Temperature:         t.temperature,
+		Pricing:             pricing,
+		UsageSource:         event.UsageSourceSubagent,
+		Gate:                t.gate,
+		ContextWindow:       ctxWin,
+		RecentKeep:          t.recentKeep,
+		CompactionBudgets:   t.budgets,
+		CompactRatio:        t.compactRatio,
+		ArchiveDir:          t.archiveDir,
+		KeepPolicy:          t.keepPolicy,
+		ResponseLanguage:    langpref.ResponseLanguageFromContext(ctx),
+		ReasoningLanguage:   langpref.ReasoningLanguageFromContext(ctx),
+		SubagentDepth:       childDepth,
+		MaxSubagentDepth:    t.maxDepth(),
+		DeliveryProfile:     t.deliveryProfile,
+		Ablation:            t.ablation,
+		WorkspaceLease:      t.workspaceLease,
+		RecoveryGate:        t.recoveryGate,
+		RecoveryAgentID:     "subagent",
+		RecoveryTaskID:      recoveryTaskID,
+		MutationObserver:    mutationObserver,
+		ExtraWorkspaceRoots: t.extraRoots,
 	}
 	if t.hooksForRole != nil {
 		opts.Hooks = t.hooksForRole(recoveryTaskID)

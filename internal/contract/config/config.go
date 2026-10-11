@@ -923,10 +923,10 @@ func (c *Config) WriteRoots() []string {
 	return c.WriteRootsForRoot(".")
 }
 
-// WriteRootsForRoot is like WriteRoots but falls back to fallbackRoot when the
-// config doesn't explicitly set a workspace_root. Desktop tabs pass their
-// project root here so tool confinement is correct without changing cwd.
-func (c *Config) WriteRootsForRoot(fallbackRoot string) []string {
+// writeRootsBeforeExtras is WriteRoots with fallbackRoot standing in when the
+// config sets no workspace_root: the root plus the user's allow_write entries.
+// Desktop tabs pass their project root so confinement needs no cwd change.
+func (c *Config) writeRootsBeforeExtras(fallbackRoot string) []string {
 	root := c.expandSandboxPath(c.Sandbox.WorkspaceRoot)
 	if root == "" {
 		root = fallbackRoot

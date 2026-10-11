@@ -29,6 +29,8 @@ type agentConfig struct {
 	writeWorkspaceRoot string
 	// observeRoot is the workspace an unclassified call's effect is observed in.
 	observeRoot string
+	// extraRoots are granted folders that are workspace beside the root.
+	extraRoots []string
 	// workspaceScanLimit bounds the observation walk; zero means workspaceScanLimit.
 	workspaceScanLimit int
 	// renderRoot opens written pages for a look; empty owes no look.
