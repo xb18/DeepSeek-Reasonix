@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	"reasonix/internal/contract/provider"
 	"reasonix/internal/contract/tool"
 	"reasonix/internal/ext/extension"
+	"reasonix/internal/ext/extension/dispatch"
 	"reasonix/internal/ext/extension/protocol"
 	"reasonix/internal/runtime/taskpolicy"
 	"reasonix/internal/state/sessionstore"
@@ -103,6 +105,74 @@ func TestToolAfterRewriteCannotHideTheOnlyWrittenCode(t *testing.T) {
 			check := a.finalReadinessCheckFor()
 			if check.missingVerification != 1 {
 				t.Errorf("missing verification = %d, reason %q; want the only written code to keep the check owed", check.missingVerification, check.reason)
+			}
+		})
+	}
+}
+
+func TestProseNamedWriteLinkTargets(t *testing.T) {
+	cases := []struct {
+		name       string
+		rootIsLink bool
+		linkTo     func(root, outside string) string
+		blockAfter bool
+		wantOwed   bool
+	}{
+		{name: "plain path adds nothing", wantOwed: false},
+		{name: "workspace root is itself a link", rootIsLink: true, wantOwed: false},
+		{name: "link to code, removed", linkTo: func(root, _ string) string { return filepath.Join(root, "Program.cs") }, wantOwed: true},
+		{name: "link to code outside the workspace", linkTo: func(_, outside string) string { return filepath.Join(outside, "Program.cs") }, wantOwed: true},
+		{name: "link to code, write reported failed", linkTo: func(root, _ string) string { return filepath.Join(root, "Program.cs") }, blockAfter: true, wantOwed: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			real := t.TempDir()
+			outside := t.TempDir()
+			root := real
+			if tc.rootIsLink {
+				root = filepath.Join(t.TempDir(), "ws")
+				if err := os.Symlink(real, root); err != nil {
+					t.Skipf("symlinks unavailable: %v", err)
+				}
+			}
+			for _, dir := range []string{real, outside} {
+				if err := os.WriteFile(filepath.Join(dir, "Program.cs"), []byte("class P {}\n"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			link := filepath.Join(root, "NOTES.md")
+			if tc.linkTo != nil {
+				if err := os.Symlink(tc.linkTo(real, outside), link); err != nil {
+					t.Skipf("symlinks unavailable: %v", err)
+				}
+			}
+			var d *dispatch.Dispatcher
+			if tc.blockAfter {
+				client := &fakeDispatchClient{interceptFn: func(ev protocol.InterceptEvent, _ json.RawMessage) (protocol.InterceptResult, error) {
+					if ev == protocol.EventToolAfter {
+						return blockWith("lint rejected the write"), nil
+					}
+					return protocol.InterceptResult{Decision: protocol.DecisionContinue}, nil
+				}}
+				d = newExtDispatcher(client, true, nil, extension.PointToolAfter)
+			}
+			reg := tool.NewRegistry()
+			reg.Add(namedFileWriter{root: root})
+			reg.Add(fakeTool{name: "bash"})
+			a := New(nil, reg, sessionstore.NewSession(""), Options{Extensions: d}, event.Discard)
+			a.observeRoot = root
+			a.writeWorkspaceRoot = root
+			a.executeOne(context.Background(), &a.turn, provider.ToolCall{ID: "1", Name: "write_file", Arguments: `{"path":"NOTES.md","content":"note\n"}`})
+			if tc.linkTo != nil {
+				if err := os.Remove(link); err != nil {
+					t.Fatal(err)
+				}
+				a.executeOne(context.Background(), &a.turn, provider.ToolCall{ID: "2", Name: "bash", Arguments: `{"command":"rm NOTES.md"}`})
+			}
+			beyond, _ := a.task.ledger.MutationPathsBeyondProse(a.checkContract())
+			owed := slices.ContainsFunc(beyond, func(p string) bool { return filepath.Base(p) == "Program.cs" })
+			if owed != tc.wantOwed {
+				t.Errorf("changed paths beyond prose = %v; want the code behind the link named = %v", beyond, tc.wantOwed)
 			}
 		})
 	}

@@ -39,6 +39,7 @@ func (a *Agent) recordToolReceipts(ctx context.Context, plan *toolCallPlan, resu
 		if rec.Write && plan.ranClean {
 			rec.Success = true
 		}
+		a.recordLinkTargets(&rec)
 		decorateExecutionReceipt(&rec, result, execution)
 		decorateObservedPaths(&rec, plan)
 		a.settleUnchangedWorkspace(ctx, &rec, plan)
