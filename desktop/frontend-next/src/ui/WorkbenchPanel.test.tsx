@@ -100,15 +100,17 @@ describe("WorkbenchPanel", () => {
     };
 
     for (const [code, detail, words] of KERNEL_WORDS) {
-      it(`says why when the column opens and the kernel refuses with ${code}`, async () => {
+      it(`says why when the browser is chosen on the launcher and the kernel refuses with ${code}`, async () => {
         drawsViews();
+        const user = userEvent.setup();
         const port = new MockPort();
         refusedLikeTheKernel(port, code, detail);
         render(<WorkbenchPanel port={port} tabs={[]} manual shown scheme="light" changes={[]} onCloseManual={vi.fn()} onSurfaces={vi.fn()} onExternal={vi.fn()} />);
+        expect(screen.queryByRole("alert")).toBeNull();
+        await user.click(screen.getByRole("button", { name: "浏览器" }));
         const alert = await screen.findByRole("alert");
         expect(alert.textContent).toBe(words);
         expect(alert.textContent).not.toContain("{");
-        expect(screen.getByText("从右侧选择文件，或打开浏览器")).toBeTruthy();
       });
 
       it(`says why when + is refused with ${code}`, async () => {
@@ -162,12 +164,34 @@ describe("WorkbenchPanel", () => {
     });
   });
 
-  it("shows the start page only while the agent has none, and gives way to the agent's", () => {
+  it("opens on a launcher that offers a choice, and no browser until one is chosen", async () => {
+    const user = userEvent.setup();
+    const props = { port: new MockPort(), manual: true, shown: false, scheme: "dark" as const, changes: [], onCloseManual: vi.fn(), onSurfaces: vi.fn(), onExternal: vi.fn() };
+    render(<WorkbenchPanel {...props} tabs={[]} />);
+    expect(screen.getByRole("group", { name: "开始" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "浏览器" })).toBeNull();
+    expect((screen.getByRole("button", { name: /^改动/ }) as HTMLButtonElement).disabled).toBe(true);
+    await user.click(screen.getByRole("button", { name: "浏览器" }));
+    expect(screen.getByRole("tab", { name: "浏览器" })).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "开始" })).toBeNull();
+  });
+
+  it("opens the file explorer from the launcher and the first change from the changes entry", async () => {
+    const user = userEvent.setup();
+    const changes = [{ path: "a.txt", status: "M" }] as never;
+    const props = { port: new MockPort(), manual: true, shown: false, scheme: "dark" as const, changes, onCloseManual: vi.fn(), onSurfaces: vi.fn(), onExternal: vi.fn() };
+    render(<WorkbenchPanel {...props} tabs={[]} />);
+    await user.click(screen.getByRole("button", { name: /^改动/ }));
+    expect(await screen.findByRole("tab", { name: /a\.txt/ })).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "开始" })).toBeNull();
+  });
+
+  it("gives way to the agent's page, with no launcher over it", () => {
     const props = { port: new MockPort(), manual: true, shown: false, scheme: "dark" as const, changes: [], onCloseManual: vi.fn(), onSurfaces: vi.fn(), onExternal: vi.fn() };
     const { rerender } = render(<WorkbenchPanel {...props} tabs={[]} />);
-    expect(screen.getByRole("tab", { name: "浏览器" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "开始" })).toBeTruthy();
     rerender(<WorkbenchPanel {...props} tabs={[{ id: "b1", target: "t1", url: "https://top.baidu.com", title: "百度热搜", active: true }]} />);
-    expect(screen.queryByRole("tab", { name: "浏览器" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "开始" })).toBeNull();
     expect(screen.getByRole("tab", { name: "百度热搜" }).getAttribute("aria-selected")).toBe("true");
   });
 
@@ -245,7 +269,7 @@ describe("WorkbenchPanel", () => {
   it("shows the file that was picked from the list rather than leaving the list over it", async () => {
     const user = userEvent.setup();
     const { container } = render(<WorkbenchPanel port={new MockPort()} tabs={[]} manual={false} shown scheme="light" changes={[]} onCloseManual={vi.fn()} onSurfaces={vi.fn()} onExternal={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: "文件" }));
+    await user.click(screen.getAllByRole("button", { name: "文件" })[0]);
     expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(true);
     await user.click(await screen.findByRole("button", { name: "README.md" }));
     expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(false);
@@ -259,7 +283,7 @@ describe("WorkbenchPanel", () => {
       { id: "b2", target: "t2", url: "https://example.com", title: "My page", active: false },
     ];
     const { container } = render(<WorkbenchPanel port={new MockPort()} tabs={pages} manual shown={false} scheme="dark" changes={[]} onCloseManual={vi.fn()} onSurfaces={vi.fn()} onExternal={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: "文件" }));
+    await user.click(screen.getAllByRole("button", { name: "文件" })[0]);
     expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(true);
     await user.click(screen.getByRole("tab", { name: "Agent page" }).querySelector("button") ?? screen.getByRole("tab", { name: "Agent page" }));
     expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(false);
@@ -269,7 +293,7 @@ describe("WorkbenchPanel", () => {
   it("steps the file list aside when a new browser tab is opened", async () => {
     const user = userEvent.setup();
     const { container } = render(<WorkbenchPanel port={new MockPort()} tabs={[]} manual={false} shown scheme="light" changes={[]} onCloseManual={vi.fn()} onSurfaces={vi.fn()} onExternal={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: "文件" }));
+    await user.click(screen.getAllByRole("button", { name: "文件" })[0]);
     expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(true);
     await user.click(screen.getByRole("button", { name: "新建浏览器标签" }));
     await waitFor(() => expect(container.querySelector(".workbench-body")?.hasAttribute("data-files")).toBe(false));

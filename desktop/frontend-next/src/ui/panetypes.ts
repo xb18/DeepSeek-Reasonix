@@ -55,6 +55,7 @@ export interface PaneProps {
   dockMax: number;
   onDockW: (w: number) => void;
   manualBrowser?: boolean;
+  browserAsk?: number;
   onManualBrowser?: (on: boolean) => void;
   // The window's failed-request notice, handed only to the pane in front.
   alert?: ReactNode;

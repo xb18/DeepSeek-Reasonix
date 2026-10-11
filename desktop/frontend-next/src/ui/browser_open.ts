@@ -14,6 +14,13 @@ export function openPage(port: AgentPort, url: string): Promise<BrowserTab> {
   return page;
 }
 
+/** The page already on its way for this window, if one is: what a followed link
+ *  asked for, which the column opened for it has to show. */
+export function pageInFlight(port: AgentPort): Promise<BrowserTab> | null {
+  const current = opening.get(port);
+  return current?.pending ? newestPage(port, current.page) : null;
+}
+
 /** A page for a column that has none: the one already on its way, else a blank. */
 export function pageForEmptyColumn(port: AgentPort): Promise<BrowserTab> {
   const current = opening.get(port);

@@ -111,7 +111,7 @@ export function Chrome({ port, status, title, steer, onSettings, onBrowser, brow
         <button className="top-action" data-action="settings.section" data-value="tools" onClick={() => onSettings("tools")} aria-label={t("沙盒")} title={t("沙盒与运行边界")}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2.5 5 2.7v5.6l-5 2.7-5-2.7V5.2Z" /><path d="m3 5.2 5 2.7 5-2.7M8 7.9v5.6" /></svg><span>{t("沙盒")}</span>
         </button>
-        <button className="thbtn browser-action" data-action="browser.open" onClick={onBrowser} aria-pressed={browser} aria-label="Browser" title={browser ? t("关闭内置 Browser") : t("打开内置 Browser")}>
+        <button className="thbtn browser-action" data-action="browser.open" onClick={onBrowser} aria-pressed={browser} aria-label="Browser" title={browser ? t("收起工作台") : t("打开内置 Browser")}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.4" /><path d="M2.8 8h10.4M8 2.6c1.5 1.5 2.3 3.3 2.3 5.4S9.5 11.9 8 13.4C6.5 11.9 5.7 10.1 5.7 8S6.5 4.1 8 2.6Z" /></svg>
         </button>
         <span className="account-presence" title={account?.signedIn ? account.user?.label : t("未登录")} />

@@ -9,7 +9,9 @@ import type {
   WorkspaceChange,
   WorkspaceFile,
 } from "../port/port";
-import { openPage, pageForEmptyColumn } from "./browser_open";
+import { openPage } from "./browser_open";
+import { useColumnOpening } from "./useColumnOpening";
+import { WorkbenchLauncher } from "./WorkbenchLauncher";
 import { AgentBrowserPanel, ManualBrowserPanel, UNREAD_TABS } from "./BrowserPanel";
 import { DiffView } from "./cards/DiffView";
 import { StudioIcon } from "./StudioIcon";
@@ -110,6 +112,7 @@ export function WorkbenchPanel({
   port,
   tabs: allTabs,
   manual,
+  browserAsk = 0,
   shown,
   scheme,
   changes,
@@ -124,6 +127,8 @@ export function WorkbenchPanel({
   port: AgentPort;
   tabs: BrowserTab[];
   manual: boolean;
+  /** Counts the title-bar Browser presses; a change asks for a browser, not just the column. */
+  browserAsk?: number;
   shown: boolean;
   scheme: "light" | "dark";
   changes: WorkspaceChange[];
@@ -270,24 +275,7 @@ export function WorkbenchPanel({
   const dropBlankStart = useCallback(() => setBrowsers((open) => open.filter((id) => !!visited.current[id])), []);
   const agentNow = useRef(agentTarget);
   agentNow.current = agentTarget;
-  useEffect(() => {
-    if (!manual) return;
-    if (agentNow.current) {
-      dropBlankStart();
-      pick(`browser:${agentNow.current}`);
-      return;
-    }
-    // A shell that draws views opens a view here too: a framed page is refused
-    // by any site sending X-Frame-Options or frame-ancestors, as many do.
-    if (host().drawsBrowserViews()) {
-      pageForEmptyColumn(port)
-        .then((tab) => pick(`browser:${tab.target}`))
-        .catch((e) => setFailed(reason(e)));
-      return;
-    }
-    setBrowsers((open) => (open.length ? open : ["b0"]));
-    setSelected((at) => (at.startsWith("manual:") ? at : "manual:b0"));
-  }, [manual, dropBlankStart, pick, port]);
+  useColumnOpening({ manual, browserAsk, port, agentNow, dropBlankStart, pick, setFailed, setBrowsers, setSelected });
   // A page that has just appeared is the one somebody wants to see, whoever
   // opened it: the agent's popup, or a link the person followed, which opens
   // beside the agent's tab without becoming the one it acts on.
@@ -584,10 +572,12 @@ export function WorkbenchPanel({
             </div>
           )}
           {!active && (
-            <div className="workbench-empty">
-              <StudioIcon name="file" />
-              <span>{t("从右侧选择文件，或打开浏览器")}</span>
-            </div>
+            <WorkbenchLauncher
+              changes={changes.length}
+              onFiles={() => setShowFiles(true)}
+              onChanges={() => changes[0] && openFile(changes[0].path)}
+              onBrowser={() => void addBrowser()}
+            />
           )}
           {/* Every open browser stays mounted: a tab switch must not throw away
               where that page had got to. */}

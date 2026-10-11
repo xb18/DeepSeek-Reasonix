@@ -192,7 +192,7 @@ describe("the workbench on a shell that cannot draw agent pages", () => {
   it("still shows the empty text when the agent has no page", () => {
     drawsViews(false);
     mount([]);
-    expect(screen.getByText("从右侧选择文件，或打开浏览器")).toBeTruthy();
+    expect(screen.getByRole("group", { name: "开始" })).toBeTruthy();
   });
 
   it("lets a page that closed go", () => {
@@ -200,6 +200,6 @@ describe("the workbench on a shell that cannot draw agent pages", () => {
     const view = mount([page("a", "https://example.com/", "Example Domain")]);
     view.rerender(<WorkbenchPanel port={new MockPort()} tabs={[]} manual={false} shown scheme="light" changes={[]} onCloseManual={vi.fn()} onSurfaces={vi.fn()} onExternal={vi.fn()} />);
     expect(screen.queryByText("https://example.com/")).toBeNull();
-    expect(screen.getByText("从右侧选择文件，或打开浏览器")).toBeTruthy();
+    expect(screen.getByRole("group", { name: "开始" })).toBeTruthy();
   });
 });

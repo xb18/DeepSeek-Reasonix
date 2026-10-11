@@ -61,7 +61,7 @@ export const EN_COMPOSER: Record<string, string> = {
   "工作区外的文件引用不到 · 这里放不下": "A file outside the workspace cannot be referenced — this drop has nowhere to go",
   "图片": "image",
   "图片不可用": "Image unavailable",
-  "文件": "file",
+  "文件": "Files",
   "粘贴的文本": "pasted text",
   "{n} 行 · 展开到输入框": "{n} lines · put it back in the box",
   "添加附件": "Add an attachment",

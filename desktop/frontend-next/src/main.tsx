@@ -6,6 +6,7 @@ import { track as trackWidth } from "./ui/viewport";
 import "./styles/tokens.css";
 import "./styles/app.css";
 import "./styles/studio.css";
+import "./styles/workbench-launcher.css";
 import "./styles/feedback.css";
 import "./styles/community.css";
 import "./styles/sponsor.css";

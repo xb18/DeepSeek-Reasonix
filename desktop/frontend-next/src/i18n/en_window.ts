@@ -95,7 +95,7 @@ export const EN_WINDOW: Record<string, string> = {
   "Reasonix 内置 Browser": "Reasonix built-in Browser",
   "部分网站可能禁止嵌入；此时可在外部浏览器打开。": "Some sites block embedding; open them in your external browser instead.",
   "正在打开网页…": "Opening page…",
-  "关闭内置 Browser": "Close the built-in Browser",
+  "收起工作台": "Collapse the workbench",
   "打开内置 Browser": "Open the built-in Browser",
   "在上方地址栏输入网址，即可在当前任务旁浏览资料。": "Enter an address above to browse beside the current task.",
   "浏览内容不会替换或中断当前会话。部分网站禁止嵌入时，可使用右上角的外部打开。": "Browsing will not replace or interrupt the current task. If a site blocks embedding, use Open externally in the toolbar.",
