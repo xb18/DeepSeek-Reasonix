@@ -88,7 +88,7 @@ function download(text: string) {
   URL.revokeObjectURL(url);
 }
 
-export function SayCard({ item, afterAnswer, reply }: { item: Extract<Item, { t: "say" }>; afterAnswer?: ReactNode; reply?: ReplyActions }) {
+export function SayCard({ item, afterAnswer, reply, quiet }: { item: Extract<Item, { t: "say" }>; afterAnswer?: ReactNode; reply?: ReplyActions; quiet?: boolean }) {
   const start = useStartsOpen("thinking", !item.done && !item.text);
   const [touched, setOpen] = useState<boolean | null>(null);
   const open = touched ?? start;
@@ -101,7 +101,7 @@ export function SayCard({ item, afterAnswer, reply }: { item: Extract<Item, { t:
   // does rather than tracking the wire's bursts.
   const thought = useRevealed(item.reasoning ?? "", !item.done && open);
   return (
-    <div className="call" data-k="say">
+    <div className="call" data-k="say" data-quiet={quiet ? "" : undefined}>
       <div className="g">
         <Sym glyph="◦" />
         <span className="line" />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Item } from "../state/session_types";
-import { transcriptRows } from "./turnrows";
+import { repeatedSpeakers, sameMembers, transcriptRows } from "./turnrows";
 
 const me = (id: string, text: string, pending?: boolean): Item => ({ t: "user", id, text, pending });
 const said = (id: string, text: string): Item => ({ t: "say", id, text, done: true });
@@ -40,5 +40,30 @@ describe("what a turn looks like once it is laid out", () => {
   it("keeps work under the model that did it while no sentence has come yet", () => {
     const blank: Item = { t: "say", id: "s0", text: "", reasoning: "\n", done: true };
     expect(shape([me("u1", "go"), blank, ran("t1"), ran("t2")])).toEqual(["user", "say+2"]);
+  });
+});
+
+describe("which sentences repeat a speaker already on screen", () => {
+  const by = (id: string, model?: string): Item => ({ t: "say", id, text: id, done: true, model });
+  const names = (items: Item[]) => [...repeatedSpeakers(items)];
+
+  it("marks every sentence after the first until the user speaks", () => {
+    expect(names([me("u1", "a"), by("s1"), ran("t1"), by("s2"), by("s3"), me("u2", "b"), by("s4")])).toEqual(["s2", "s3"]);
+  });
+
+  it("keeps the header where the model changes", () => {
+    expect(names([me("u1", "a"), by("s1", "m1"), by("s2", "m2"), by("s3", "m2")])).toEqual(["s3"]);
+  });
+
+  it("does not let a queued line or an empty sentence reset or stand in", () => {
+    expect(names([me("u1", "a"), by("s1"), me("q", "later", true), { t: "say", id: "e", text: "", done: false }, by("s2")])).toEqual(["s2"]);
+  });
+});
+
+describe("keeping a set when nothing in it changed", () => {
+  it("compares members, not references", () => {
+    expect(sameMembers(new Set(["a", "b"]), new Set(["b", "a"]))).toBe(true);
+    expect(sameMembers(new Set(["a"]), new Set(["a", "b"]))).toBe(false);
+    expect(sameMembers(new Set(["a", "c"]), new Set(["a", "b"]))).toBe(false);
   });
 });

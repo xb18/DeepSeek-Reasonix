@@ -70,7 +70,7 @@ it("always draws the rail by default, with every entry in it", async () => {
   expect(nav()).not.toBeNull();
   expect(app().dataset.nav).toBe("on");
   expect(document.querySelector(".railfoot")).toBeNull();
-  for (const name of ["会话", "用量", "工具与权限", "扩展", "记忆", "远程", "发送反馈", "账号", "设置"]) {
+  for (const name of ["会话", "用量", "文件", "工具与权限", "扩展", "记忆", "远程", "发送反馈", "账号", "设置"]) {
     expect(within(navEl()!).getByRole("button", { name: new RegExp(`^${name}`) }), name).toBeTruthy();
   }
 });
@@ -202,4 +202,47 @@ it("opens feedback from the rail like the sidebar entry does, badge included", a
   expect(entry.querySelector(".fbk-badge")?.textContent).toBe("3");
   await userEvent.click(entry);
   expect(await screen.findByRole("tab", { name: "我的反馈", selected: true })).toBeTruthy();
+});
+
+it("the conversation item opens and closes the workspace column, and from settings it goes home", async () => {
+  await open();
+  const item = () => within(navEl()!).getByRole("button", { name: /^会话/ });
+  expect(app().dataset.rail).toBe("on");
+  await userEvent.click(item());
+  expect(app().dataset.rail).toBe("off");
+  await userEvent.click(item());
+  expect(app().dataset.rail).toBe("on");
+  await userEvent.click(within(navEl()!).getByRole("button", { name: /^用量/ }));
+  expect(item().getAttribute("aria-current")).toBeNull();
+  await userEvent.click(item());
+  expect(item().getAttribute("aria-current")).toBe("page");
+  expect(item().hasAttribute("aria-pressed")).toBe(false);
+  expect(app().dataset.rail).toBe("on");
+});
+
+it("leaves the sidebar toggle alone while the settings sheet is over the window", async () => {
+  await open();
+  const toggle = () => document.querySelector<HTMLButtonElement>(".studio-menu")!;
+  expect(toggle().disabled).toBe(false);
+  await userEvent.click(within(navEl()!).getByRole("button", { name: /^用量/ }));
+  expect(toggle().disabled).toBe(true);
+  await userEvent.click(within(navEl()!).getByRole("button", { name: /^会话/ }));
+  expect(toggle().disabled).toBe(false);
+});
+
+it("keeps one sidebar toggle, and the sidebar does not repeat what the rail already holds", async () => {
+  await open();
+  const toggles = screen.getAllByRole("button", { name: /收起工作区栏|展开工作区栏/ }).filter((b) => b.tabIndex !== -1);
+  expect(toggles).toHaveLength(1);
+  expect(toggles[0].classList.contains("studio-menu")).toBe(true);
+  expect(document.querySelector(".studio-quicknav")).toBeNull();
+  await toggleSidebar();
+  await toggleSidebar();
+  expect(screen.getAllByRole("button", { name: /收起工作区栏|展开工作区栏/ }).filter((b) => b.tabIndex !== -1)).toHaveLength(1);
+});
+
+it("with the rail off the sidebar keeps its own quick entries", async () => {
+  localStorage.setItem(KEY, "off");
+  await open();
+  expect(document.querySelector(".studio-quicknav")).not.toBeNull();
 });

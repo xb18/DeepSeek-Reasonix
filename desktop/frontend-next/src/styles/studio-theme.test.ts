@@ -53,7 +53,7 @@ describe("the Studio shell closes over the active theme", () => {
 
   it("keeps the sidebar brand on the same title-bar row as the chrome", () => {
     expect(closure).toMatch(/\.studio-brand\s*\{[^}]*height:\s*var\(--chrome-h\)/s);
-    expect(closure).toMatch(/\.studio-collapse\s*\{[^}]*width:\s*30px[^}]*height:\s*30px/s);
+    expect(css).toMatch(/\.studio-menu\s*\{[^}]*position:\s*fixed[^}]*width:\s*30px[^}]*height:\s*30px/s);
   });
 
   it("gives light-theme run data readable surfaces and leaves the composer metrics unframed", () => {

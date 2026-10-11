@@ -30,6 +30,8 @@ interface Props {
   rail: boolean;
   theme: string;
   onRail: () => void;
+  /** The settings sheet is a modal over the window: what is behind it is not for pressing. */
+  railLocked?: boolean;
   onTheme: () => void;
   onFind: () => void;
   // The window's port, for what belongs to the window rather than a pane.
@@ -37,7 +39,7 @@ interface Props {
   onError?: (e: unknown) => void;
 }
 
-export function Chrome({ port, status, title, steer, onSettings, onBrowser, browser, account, host, rail, theme, onRail, onTheme, onFind, hub, onError }: Props) {
+export function Chrome({ port, status, title, steer, onSettings, onBrowser, browser, account, host, rail, theme, onRail, railLocked = false, onTheme, onFind, hub, onError }: Props) {
   const root = status?.workspaceRoot || status?.cwd || "";
   const project = root ? base(root) : "—";
   // Only for the "隔离" tag: the folder list and the switch itself moved to the
@@ -54,10 +56,10 @@ export function Chrome({ port, status, title, steer, onSettings, onBrowser, brow
   return (
     <>
     {hub && <DeviceBar hub={hub} />}
+    <button className="studio-menu" data-action="chrome.rail" onClick={onRail} disabled={railLocked} aria-pressed={rail} aria-label={rail ? t("收起工作区栏") : t("展开工作区栏")}>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h10" /></svg>
+    </button>
     <div className="chrome" onDoubleClick={zoomOnTitleBar}>
-      <button className="thbtn studio-menu" data-action="chrome.rail" onClick={onRail} aria-pressed={rail} aria-label={rail ? t("收起工作区栏") : t("展开工作区栏")}>
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h10" /></svg>
-      </button>
 
       <div className="crumb">
         <svg className="crumb-folder" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h4l1.2 1.4h5.8v6.6h-11z" /></svg>

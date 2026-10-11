@@ -484,7 +484,7 @@ body { background: var(--page) !important; }
 .chrome {
   width: auto;
   margin-left: calc(var(--nav-w) + var(--rail-w));
-  padding: 0 18px 0 20px;
+  padding: 0 18px 0 max(20px, calc(var(--lights-w) + 50px - var(--nav-w) - var(--rail-w)));
   gap: 11px;
   background: var(--surface) !important;
   border-bottom: 1px solid var(--hair);
@@ -501,7 +501,10 @@ body { background: var(--page) !important; }
 .app { --srail-w: 36px; }
 
 /* Prototype header */
-.chrome .studio-menu { width: 30px; margin-left: -6px; }
+.studio-menu { position: fixed; z-index: 40; left: calc(var(--lights-w) + 10px); top: calc((var(--chrome-h) - 30px) / 2); width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--faint); cursor: pointer; }
+.studio-menu svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; }
+.studio-menu:hover { color: var(--text); background: var(--float); border-color: var(--border); }
+[data-titlebar="app"] .studio-menu { -webkit-app-region: no-drag; }
 .chrome .crumb { gap: 8px; color: var(--faint); font-size: 12px; }
 .chrome .crumb-folder { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.25; }
 .chrome .crumb-proj { color: var(--muted); font-weight: 600; }
@@ -590,9 +593,6 @@ body { background: var(--page) !important; }
 .studio-brand small { color: var(--faint); font-size: 9px; line-height: 9px; letter-spacing: .08em; }
 .studio-brand b,
 .studio-brand small { display: block; }
-.studio-collapse { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--faint); cursor: pointer; }
-.studio-collapse .studio-icon { width: 15px; height: 15px; stroke-width: 1.55; }
-.studio-collapse:hover { color: var(--text); background: var(--overlay); }
 .studio-new-task {
   height: 34px;
   padding: 0 10px;
@@ -796,6 +796,8 @@ body { background: var(--page) !important; }
   color: var(--accent-fg); font: 650 10px/1 var(--ui);
 }
 .flow .call[data-k="say"] > .g .sym svg { display: none; }
+.flow .call[data-k="say"][data-quiet] > .g,
+.flow .call[data-k="say"][data-quiet] > .c > .hl { display: none; }
 .flow .call[data-k="say"] > .c { padding: 0 0 var(--y-say); }
 .flow .call[data-k="say"] > .c > .hl {
   min-height: 25px; margin-bottom: 10px; padding-left: 29px; align-items: center;
@@ -1550,7 +1552,6 @@ body { background: var(--page) !important; }
 :root[data-theme="light"] .studio-brand-mark { background: var(--accent); color: var(--accent-fg); }
 :root[data-theme="light"] .studio-new-task { border-color: transparent; font-weight: 590; }
 :root[data-theme="light"] .studio-search:hover,
-:root[data-theme="light"] .studio-collapse:hover,
 :root[data-theme="light"] .studio-settings:hover,
 :root[data-theme="light"] .studio-wallet:hover { background: var(--hair); color: var(--text); }
 :root[data-theme="light"] .rail .machrow { color: var(--text); }
@@ -2982,7 +2983,6 @@ body { font-size: 14px; line-height: 1.75; }
 .chrome .crumb b { color: var(--text); }
 .chrome .crumbsep,
 .chrome .top-action,
-.studio-collapse,
 .studio-settings { color: var(--ghost); }
 .chrome .badge,
 .chrome .top-action[aria-pressed="true"] { background: var(--overlay); color: var(--muted); border-color: var(--border); }
@@ -2995,7 +2995,6 @@ body { font-size: 14px; line-height: 1.75; }
 .studio-brand-word b { color: var(--text); }
 .studio-brand small,
 .studio-brand-word small { color: var(--faint); }
-.studio-collapse:hover,
 .studio-settings:hover,
 .studio-search:hover,
 .studio-quicknav button:hover { color: var(--text); background: var(--overlay); }
@@ -4044,18 +4043,12 @@ body { font-size: 14px; line-height: 1.75; }
 /* The brand rail and conversation chrome are one application title bar. Keep
    their optical centres on the same 54px row instead of letting sidebar
    content padding push the wordmark a full control-height lower. */
-.studio-rail-head { padding-top: 0; }
+.studio-rail-head { padding-top: 0; padding-left: calc(22px + max(0px, 44px - var(--nav-w))); }
 .studio-brand {
   height: var(--chrome-h);
   padding-block: 0;
   margin-bottom: 12px;
 }
-.studio-collapse {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-}
-.chrome .studio-menu,
 .chrome .thbtn,
 .chrome .top-action { min-height: 30px; }
 .chrome .crumb,

@@ -153,7 +153,7 @@
     --chrome-h: 51px; --lights-w: 96px; --lights-h: var(--chrome-h);
   }
   [data-titlebar="app"][data-platform="darwin"] .app[data-rail="off"] .chrome {
-    padding-left: calc(var(--lights-w) - var(--nav-w));
+    padding-left: calc(var(--lights-w) + 50px - var(--nav-w));
   }
   [data-titlebar="app"][data-platform="darwin"] .app[data-rail="on"] .studio-rail-head {
     padding-top: var(--lights-h); -webkit-app-region: drag;

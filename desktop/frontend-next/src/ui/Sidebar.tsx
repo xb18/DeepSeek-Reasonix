@@ -201,7 +201,6 @@ export function Sidebar({
             <b>reasoni<span className="studio-brand-accent">x</span></b>
             <small>studio</small>
           </span>
-          <button className="studio-collapse" data-action="chrome.rail" onClick={() => onCollapse()} aria-label={t("收起工作区栏")} title={t("收起侧栏")}><StudioIcon name="panel" /></button>
         </div>
         <button
           className="studio-new-task"
@@ -213,11 +212,13 @@ export function Sidebar({
         <button className="studio-search" data-action="workspace.search" onClick={() => setPalette(true)}>
           <span aria-hidden="true"><StudioIcon name="search" /></span><b className="studio-label">{t("搜索与快捷操作")}</b><kbd>Ctrl K</kbd>
         </button>
-        <div className="studio-quicknav">
-          <button data-action="settings.section" data-value="storage" onClick={() => onSettings("storage")}><span aria-hidden="true"><StudioIcon name="file" /></span><b>{t("文件")}</b></button>
-          <button data-action="settings.section" data-value="ext" onClick={() => onSettings("ext")}><span aria-hidden="true"><StudioIcon name="plug" /></span><b>{t("工具与集成")}</b><small>MCP · Skills</small></button>
-          <button data-action="settings.section" data-value="remote" onClick={() => onSettings("remote")}><span aria-hidden="true"><StudioIcon name="server" /></span><b>{t("运行环境")}</b><small>Local / SSH</small></button>
-        </div>
+        {!navShown && (
+          <div className="studio-quicknav">
+            <button data-action="settings.section" data-value="storage" onClick={() => onSettings("storage")}><span aria-hidden="true"><StudioIcon name="file" /></span><b>{t("文件")}</b></button>
+            <button data-action="settings.section" data-value="ext" onClick={() => onSettings("ext")}><span aria-hidden="true"><StudioIcon name="plug" /></span><b>{t("工具与集成")}</b><small>MCP · Skills</small></button>
+            <button data-action="settings.section" data-value="remote" onClick={() => onSettings("remote")}><span aria-hidden="true"><StudioIcon name="server" /></span><b>{t("运行环境")}</b><small>Local / SSH</small></button>
+          </div>
+        )}
         <div className="studio-section-label studio-session-label"><span>{t("会话")}</span></div>
         <div className="studio-session-filters" role="group" aria-label={t("会话范围")}>
           <div className="studio-session-segments">

@@ -546,6 +546,7 @@ export function App({ hub }: { hub: HubPort }) {
         rail={rail}
         theme={scheme}
         onRail={() => setRail((v) => !v)}
+        railLocked={!!settings}
         onTheme={() => setTheme(scheme === "dark" ? "light" : "dark")}
         onFind={openFind}
         hub={hub} onError={fail}
@@ -559,6 +560,7 @@ export function App({ hub }: { hub: HubPort }) {
             at={settings === false ? null : settings === true ? "" : settings}
             onGo={showPrefs}
             onHome={hidePrefs}
+            onRail={() => setRail((v) => !v)}
             onFeedback={() => setFeedback(feedbackEntryTab(feedbackUnread))}
             feedbackUnread={feedbackUnread}
             shown={navRail.shown}
