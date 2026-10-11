@@ -81,24 +81,8 @@ func (s *Server) editProvider(w http.ResponseWriter, r *http.Request) {
 	if base := strings.TrimSpace(body.BaseURL); base != "" {
 		entry.BaseURL = base
 	}
-	if body.Kind != nil {
-		kind := strings.ToLower(strings.TrimSpace(*body.Kind))
-		wire, known := config.ProtocolFor(kind)
-		if !known || config.AnswersFor(kind) != config.AnswersFor(entry.Kind) {
-			refuse(w, http.StatusUnprocessableEntity, "provider.kind_unsupported",
-				fmt.Sprintf("unsupported provider kind %q", kind), map[string]any{"kind": kind})
-			return
-		}
-		if wire.Kind != entry.Kind {
-			// Every wire reads request_url, and auth_header shapes one wire's
-			// credentials, so the pinned values would be sent to the new protocol.
-			if entry.RequestURL != "" || entry.ChatURL != "" || entry.AuthHeader {
-				refuse(w, http.StatusConflict, "provider.kind_pinned_endpoint",
-					"this source pins a request URL or auth header written for its current protocol", map[string]any{"kind": wire.Kind})
-				return
-			}
-			entry.Kind = wire.Kind
-		}
+	if !applyKind(w, entry, body.Kind) {
+		return
 	}
 	entry.Models = models
 	entry.Model = ""
@@ -206,6 +190,33 @@ func assemblyShape(e *config.ProviderEntry) string {
 		return fmt.Sprintf("%#v", shape)
 	}
 	return string(b)
+}
+
+// applyKind moves an entry to another wire of the same role and answers the
+// refusal itself. An alias is stored as its canonical kind.
+func applyKind(w http.ResponseWriter, entry *config.ProviderEntry, requested *string) bool {
+	if requested == nil {
+		return true
+	}
+	kind := strings.ToLower(strings.TrimSpace(*requested))
+	wire, known := config.ProtocolFor(kind)
+	if !known || config.AnswersFor(kind) != config.AnswersFor(entry.Kind) {
+		refuse(w, http.StatusUnprocessableEntity, "provider.kind_unsupported",
+			fmt.Sprintf("unsupported provider kind %q", kind), map[string]any{"kind": kind})
+		return false
+	}
+	if wire.Kind == entry.Kind {
+		return true
+	}
+	// Every wire reads request_url, and auth_header shapes one wire's
+	// credentials, so the pinned values would be sent to the new protocol.
+	if entry.RequestURL != "" || entry.ChatURL != "" || entry.AuthHeader {
+		refuse(w, http.StatusConflict, "provider.kind_pinned_endpoint",
+			"this source pins a request URL or auth header written for its current protocol", map[string]any{"kind": wire.Kind})
+		return false
+	}
+	entry.Kind = wire.Kind
+	return true
 }
 
 // applyReasoningFields stores the protocol, the connection's effort vocabulary
