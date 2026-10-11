@@ -60,6 +60,7 @@ const SAID: Record<string, string> = {
   "provider.name_taken": "已经有名为「{name}」的连接了，换一个名称",
   "provider.config_unreadable": "读不到配置文件，没法安全地选择密钥存放位置，请检查配置后重试",
   "provider.endpoint_required": "请填写接口地址",
+  "provider.kind_pinned_endpoint": "这个来源固定了为当前协议写的请求地址或认证方式，不能直接换协议：请先在配置文件里去掉 request_url、chat_url 和 auth_header",
   "provider.kind_unsupported": "无法识别「{kind}」这种接入方式",
   "provider.no_models_picked": "请至少选择一个模型",
   "provider.default_not_selected": "默认模型「{model}」不在已选择的模型中",

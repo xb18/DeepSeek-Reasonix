@@ -63,6 +63,12 @@ export function EditConn({
     () => Object.fromEntries(Object.entries(entry.modelLimits ?? {}).map(([m, l]) => [m, limitTextOf(l)])),
   );
   const [think, setThink] = useState(entry.reasoningProtocol ?? "");
+  // Until saved, the thinking field follows the wire being picked: the stored
+  // entry's field belongs to the stored wire.
+  const draftWire = wires.find((w) => w.kind === kind);
+  const effortField = kind === entry.kind || !draftWire
+    ? entry.effortField
+    : !draftWire.effortUnder?.length || think === "" || draftWire.effortUnder.includes(think) ? draftWire.effortField : undefined;
   const [levelText, setLevelText] = useState((entry.supportedEfforts ?? []).join(", "));
   const [defEffort, setDefEffort] = useState(entry.defaultEffort ?? "");
   const levels = parseEffortLevels(levelText);
@@ -443,7 +449,7 @@ export function EditConn({
               <i className="tip">
                 {t("端点控制思考深度的方式。此项无法自动探测：中转站转发的是第三方模型，只有你知道其后端。选择后才能调整推理强度，选择错误会导致请求被端点拒绝。")}
               </i>
-              <EffortShape field={think === (entry.reasoningProtocol ?? "") ? entry.effortField : undefined} level={levels[0]} />
+              <EffortShape field={think === (entry.reasoningProtocol ?? "") || kind !== entry.kind ? effortField : undefined} level={levels[0]} />
             </label>
             <label className="grow">
               <span>{t("推理档位")}</span>
@@ -459,8 +465,8 @@ export function EditConn({
               <i className="tip">
                 {levelsDormant
                   ? t("当前思考参数不使用自定义档位；已填写的档位会保留，切换协议后生效。")
-                  : entry.effortField
-                    ? t("端点接受的取值，逗号分隔，按原样作为 {field} 的值发送。填写后会替代思考参数自带的档位；型号没有内置档位时需要在这里手填才能选。", { field: entry.effortField })
+                  : effortField
+                    ? t("端点接受的取值，逗号分隔，按原样作为 {field} 的值发送。填写后会替代思考参数自带的档位；型号没有内置档位时需要在这里手填才能选。", { field: effortField })
                     : t("端点接受的取值，逗号分隔，按原样发送。填写后会替代思考参数自带的档位；型号没有内置档位时需要在这里手填才能选。")}
               </i>
             </label>

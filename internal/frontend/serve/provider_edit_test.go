@@ -827,3 +827,59 @@ func TestEditProviderRefusesAProtocolItCannotSwitchTo(t *testing.T) {
 		}
 	}
 }
+
+func TestEditProviderKindChangeRebuildsTheRunningConversation(t *testing.T) {
+	srv := newRichProviderServer(t)
+
+	resp := postProvider(t, srv.URL, "/providers/edit", `{"name":"rich","kind":"anthropic","models":["alpha","beta"],"default":"alpha"}`)
+	var body struct {
+		Code string `json:"code"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&body)
+	resp.Body.Close()
+	if body.Code != "runtime.rebuild_failed" {
+		t.Fatalf("code = %q (status %d), want a rebuild attempt: the test runtime cannot build an anthropic provider", body.Code, resp.StatusCode)
+	}
+	if got := storedKind(t, "rich"); got != "anthropic" {
+		t.Fatalf("kind = %q, the edit must be saved before the rebuild", got)
+	}
+}
+
+func TestEditProviderRefusesAProtocolChangeOnAPinnedEndpoint(t *testing.T) {
+	srv := newRichProviderServer(t)
+	withIdleProvider(t)
+	f, err := os.OpenFile(config.UserConfigPath(), os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = f.WriteString("\n[[providers]]\nname = \"pinned\"\nkind = \"openai\"\nbase_url = \"https://p.invalid/v1\"\nrequest_url = \"https://p.invalid/v1/chat/completions\"\nmodels = [\"m1\"]\ndefault = \"m1\"\napi_key_env = \"P_API_KEY\"\n")
+	f.Close()
+
+	resp := postProvider(t, srv.URL, "/providers/edit", `{"name":"pinned","kind":"anthropic","models":["m1"],"default":"m1"}`)
+	var body struct {
+		Code string `json:"code"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusConflict || body.Code != "provider.kind_pinned_endpoint" {
+		t.Fatalf("status %d code %q, want 409 provider.kind_pinned_endpoint", resp.StatusCode, body.Code)
+	}
+	if got := storedKind(t, "pinned"); got != "openai" {
+		t.Fatalf("kind = %q, the refused edit was written", got)
+	}
+	same := postProvider(t, srv.URL, "/providers/edit", `{"name":"pinned","kind":"openai","models":["m1"],"default":"m1"}`)
+	same.Body.Close()
+	if same.StatusCode != http.StatusNoContent {
+		t.Fatalf("an unchanged protocol on a pinned endpoint = %d, want 204", same.StatusCode)
+	}
+}
+
+func TestEditProviderStoresTheCanonicalProtocolName(t *testing.T) {
+	srv := newRichProviderServer(t)
+	withIdleProvider(t)
+	resp := postProvider(t, srv.URL, "/providers/edit", `{"name":"idle","kind":"dashscope-responses","models":["m1"],"default":"m1"}`)
+	resp.Body.Close()
+	if got := storedKind(t, "idle"); resp.StatusCode != http.StatusNoContent || got != "responses" {
+		t.Fatalf("status %d kind %q, want the canonical responses", resp.StatusCode, got)
+	}
+}

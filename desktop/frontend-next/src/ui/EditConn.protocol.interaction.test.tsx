@@ -12,7 +12,7 @@ afterEach(cleanup);
 const wires: Protocol[] = [
   { kind: "openai", discovery: "openai", serverWebSearch: false, reasoningParams: true },
   { kind: "responses", discovery: "openai", serverWebSearch: true, reasoningParams: true },
-  { kind: "anthropic", discovery: "anthropic", serverWebSearch: true, reasoningParams: false },
+  { kind: "anthropic", discovery: "anthropic", serverWebSearch: true, reasoningParams: false, effortField: "output_config.effort" },
   { kind: "typesafe", answers: "decision", discovery: "", serverWebSearch: false, reasoningParams: false },
 ];
 
@@ -21,8 +21,8 @@ const relay = (over: Partial<ProviderEntry> = {}): ProviderEntry => ({
   models: ["a", "b"], default: "a", hasKey: true, inUse: false, preset: false, ...over,
 });
 
-const mount = (entry: ProviderEntry, port: Partial<Port>) =>
-  render(<EditConn entry={entry} port={port as unknown as Port} busy="" setBusy={() => {}} onDone={() => {}} onRevert={() => {}} />);
+const mount = (entry: ProviderEntry, port: Partial<Port>, declare = false) =>
+  render(<EditConn entry={entry} port={port as unknown as Port} busy="" setBusy={() => {}} onDone={() => {}} onRevert={() => {}} declare={declare} />);
 
 it("offers the chat wires and saves the one picked", async () => {
   const editProvider = vi.fn(async () => {});
@@ -37,6 +37,15 @@ it("offers the chat wires and saves the one picked", async () => {
   await userEvent.click(screen.getByRole("button", { name: "保存" }));
   await waitFor(() => expect(editProvider).toHaveBeenCalled());
   expect(editProvider).toHaveBeenCalledWith(expect.objectContaining({ name: "relay", kind: "anthropic" }));
+});
+
+it("words the thinking field by the wire being picked, not the stored one", async () => {
+  mount(relay({ effortField: "reasoning_effort" }), { editProvider: vi.fn(), protocols: async () => wires }, true);
+  const select = await screen.findByRole("combobox", { name: "接口协议" });
+  expect(document.body.textContent).toContain("reasoning_effort");
+  await userEvent.selectOptions(select, "anthropic");
+  expect(document.body.textContent).toContain("output_config.effort");
+  expect(document.body.textContent).not.toContain("reasoning_effort");
 });
 
 it("checks a model on the wire being picked, not the stored one", async () => {

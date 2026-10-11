@@ -167,6 +167,7 @@ export const EN_KERNEL: Record<string, string> = {
   "读不到配置文件，没法安全地选择密钥存放位置，请检查配置后重试": "The configuration could not be read, so there is no safe place to store the key; check the config and try again",
   "请填写接口地址": "Enter an endpoint address",
   "无法识别「{kind}」这种接入方式": "“{kind}” is not a protocol this knows",
+  "这个来源固定了为当前协议写的请求地址或认证方式，不能直接换协议：请先在配置文件里去掉 request_url、chat_url 和 auth_header": "This source pins a request URL or auth header written for its current protocol, so its protocol cannot be changed here: remove request_url, chat_url and auth_header from the config file first",
   "请至少选择一个模型": "Pick at least one model",
   "默认模型「{model}」不在已选择的模型中": "The default model “{model}” is not among the ones you picked",
   "显示名称最多 {max} 个字符": "A display name can be at most {max} characters",

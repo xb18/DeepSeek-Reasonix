@@ -83,12 +83,22 @@ func (s *Server) editProvider(w http.ResponseWriter, r *http.Request) {
 	}
 	if body.Kind != nil {
 		kind := strings.ToLower(strings.TrimSpace(*body.Kind))
-		if !config.SupportedProviderKind(kind) || config.AnswersFor(kind) != config.AnswersFor(entry.Kind) {
+		wire, known := config.ProtocolFor(kind)
+		if !known || config.AnswersFor(kind) != config.AnswersFor(entry.Kind) {
 			refuse(w, http.StatusUnprocessableEntity, "provider.kind_unsupported",
 				fmt.Sprintf("unsupported provider kind %q", kind), map[string]any{"kind": kind})
 			return
 		}
-		entry.Kind = kind
+		if wire.Kind != entry.Kind {
+			// Every wire reads request_url, and auth_header shapes one wire's
+			// credentials, so the pinned values would be sent to the new protocol.
+			if entry.RequestURL != "" || entry.ChatURL != "" || entry.AuthHeader {
+				refuse(w, http.StatusConflict, "provider.kind_pinned_endpoint",
+					"this source pins a request URL or auth header written for its current protocol", map[string]any{"kind": wire.Kind})
+				return
+			}
+			entry.Kind = wire.Kind
+		}
 	}
 	entry.Models = models
 	entry.Model = ""
