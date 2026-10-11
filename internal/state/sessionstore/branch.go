@@ -153,7 +153,14 @@ func BranchMetaPath(sessionPath string) string {
 	return store.SessionMeta(sessionPath)
 }
 
+// branchMetaReadHook, when set, is told of every sidecar read; tests count
+// reads through it.
+var branchMetaReadHook func(sessionPath string)
+
 func LoadBranchMeta(sessionPath string) (BranchMeta, bool, error) {
+	if branchMetaReadHook != nil {
+		branchMetaReadHook(sessionPath)
+	}
 	metaPath := BranchMetaPath(sessionPath)
 	if metaPath == "" {
 		return BranchMeta{}, false, nil
@@ -256,6 +263,17 @@ func SaveBranchMetaPreserveUpdatedLocked(sessionPath string, m BranchMeta) error
 }
 
 func saveBranchMeta(sessionPath string, m BranchMeta, touchUpdated bool) error {
+	var persisted *BranchMeta
+	if existing, ok, err := LoadBranchMeta(sessionPath); err == nil && ok {
+		persisted = &existing
+	}
+	return saveBranchMetaAfter(sessionPath, m, touchUpdated, persisted)
+}
+
+// saveBranchMetaAfter is saveBranchMeta for a caller that holds the meta lock
+// and has just read the sidecar itself: persisted is that read (nil when there
+// was no sidecar), so the file is not read a second time within one transaction.
+func saveBranchMetaAfter(sessionPath string, m BranchMeta, touchUpdated bool, persisted *BranchMeta) error {
 	metaPath := BranchMetaPath(sessionPath)
 	if metaPath == "" {
 		return fmt.Errorf("empty session path")
@@ -270,8 +288,8 @@ func saveBranchMeta(sessionPath string, m BranchMeta, touchUpdated bool) error {
 	if touchUpdated || m.UpdatedAt.IsZero() {
 		m.UpdatedAt = now
 	}
-	if existing, ok, err := LoadBranchMeta(sessionPath); err == nil && ok {
-		preserveBranchMetaPersistence(&m, existing)
+	if persisted != nil {
+		preserveBranchMetaPersistence(&m, *persisted)
 	}
 	if err := os.MkdirAll(filepath.Dir(metaPath), 0o755); err != nil {
 		return err
@@ -640,6 +658,7 @@ func UpdateSessionMeta(sessionPath, model, preview string, turns int, markActivi
 	if err != nil {
 		return err
 	}
+	persisted := m
 	if strings.TrimSpace(model) != "" {
 		m.Model = strings.TrimSpace(model)
 	}
@@ -652,5 +671,5 @@ func UpdateSessionMeta(sessionPath, model, preview string, turns int, markActivi
 	// These counts were derived from the current content, so mark them
 	// authoritative — listing can then trust Turns (even 0) without re-decoding.
 	m.SchemaVersion = BranchMetaCountsVersion
-	return saveBranchMeta(sessionPath, m, markActivity)
+	return saveBranchMetaAfter(sessionPath, m, markActivity, &persisted)
 }

@@ -1041,7 +1041,11 @@ func recordSessionContentRevision(path string, digest [sha256.Size]byte, baseRev
 		// up-to-date ledgerStale path in save().
 		return 0, err
 	}
-	if !ok {
+	var persisted *BranchMeta
+	if ok {
+		read := meta
+		persisted = &read
+	} else {
 		meta = BranchMeta{ID: BranchID(path)}
 	}
 	if meta.Revision < baseRevision {
@@ -1050,15 +1054,8 @@ func recordSessionContentRevision(path string, digest [sha256.Size]byte, baseRev
 	meta.Revision++
 	meta.ContentDigest = digestString(digest)
 	meta.WriterID = SessionWriterID()
-	if err := saveBranchMeta(path, meta, false); err != nil {
+	if err := saveBranchMetaAfter(path, meta, false, persisted); err != nil {
 		return 0, err
-	}
-	stored, ok, err := loadBranchMetaRetry(path)
-	if err != nil {
-		return 0, err
-	}
-	if ok && stored.Revision > 0 {
-		return stored.Revision, nil
 	}
 	return meta.Revision, nil
 }
@@ -1311,12 +1308,13 @@ func UpdateBranchMeta(path string, touchUpdated bool, update func(*BranchMeta) e
 	if err != nil {
 		return err
 	}
+	persisted := m
 	if update != nil {
 		if err := update(&m); err != nil {
 			return err
 		}
 	}
-	return saveBranchMeta(path, m, touchUpdated)
+	return saveBranchMetaAfter(path, m, touchUpdated, &persisted)
 }
 
 func canonicalSessionSavePath(path string) string {

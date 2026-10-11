@@ -92,13 +92,32 @@ func checkObjectFile(path string, data []byte, d Digest) (bool, error) {
 	return true, nil
 }
 
-// Object returns the bytes named by d after checking they still hash to d.
+// Object returns the bytes named by d after checking they still hash to d. A
+// read already verified is served from memory while the file keeps its size and
+// modification time (objectcache.go); Verify always reads the bytes.
 func (s *Store) Object(d Digest) ([]byte, error) {
 	path, err := s.objectPath(d)
 	if err != nil {
 		return nil, err
 	}
-	data, err := os.ReadFile(path)
+	if data, ok := s.cachedObject(path); ok {
+		return data, nil
+	}
+	return s.readObject(path, d)
+}
+
+// objectFromDisk is Object that never answers from memory.
+func (s *Store) objectFromDisk(d Digest) ([]byte, error) {
+	path, err := s.objectPath(d)
+	if err != nil {
+		return nil, err
+	}
+	return s.readObject(path, d)
+}
+
+func (s *Store) readObject(path string, d Digest) ([]byte, error) {
+	before, statErr := s.statFile(path)
+	data, err := s.readFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("%w: object %s", ErrNotFound, d)
 	}
@@ -107,6 +126,9 @@ func (s *Store) Object(d Digest) ([]byte, error) {
 	}
 	if DigestOf(data) != d {
 		return nil, fmt.Errorf("%w: object %s does not hold the bytes it is named for", ErrTampered, d)
+	}
+	if statErr == nil {
+		s.rememberObject(path, data, before)
 	}
 	return data, nil
 }

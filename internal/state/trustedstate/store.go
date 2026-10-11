@@ -84,8 +84,12 @@ type Store struct {
 	integrity func() IntegrityLevel
 	now       func() time.Time
 
+	readFile func(string) ([]byte, error)
+	statFile func(string) (fs.FileInfo, error)
+
 	mu       sync.Mutex
 	observed map[string]Head
+	objects  objectCache
 }
 
 // Open returns the store rooted at root. integrity is asked at every write; nil
@@ -94,7 +98,7 @@ func Open(root string, integrity func() IntegrityLevel) *Store {
 	if integrity == nil {
 		integrity = func() IntegrityLevel { return TamperEvidentOnly }
 	}
-	return &Store{root: root, integrity: integrity, now: time.Now, observed: map[string]Head{}}
+	return &Store{root: root, integrity: integrity, now: time.Now, observed: map[string]Head{}, readFile: os.ReadFile, statFile: os.Stat}
 }
 
 // Root is the directory the store writes under.
@@ -262,14 +266,18 @@ func (s *Store) observe(stream string, h Head) {
 }
 
 // Record reads and checks one record object.
-func (s *Store) Record(d Digest) (Record, error) {
-	data, err := s.Object(d)
+func (s *Store) Record(d Digest) (Record, error) { return decodeRecord(s.Object(d)) }
+
+// recordFromDisk is Record for a caller that must see the bytes on disk.
+func (s *Store) recordFromDisk(d Digest) (Record, error) { return decodeRecord(s.objectFromDisk(d)) }
+
+func decodeRecord(data []byte, err error) (Record, error) {
 	if err != nil {
 		return Record{}, err
 	}
 	var rec Record
 	if err := json.Unmarshal(data, &rec); err != nil {
-		return Record{}, fmt.Errorf("%w: record %s does not parse", ErrTampered, d)
+		return Record{}, fmt.Errorf("%w: record does not parse", ErrTampered)
 	}
 	return rec, nil
 }
@@ -284,7 +292,7 @@ func (s *Store) Verify(stream string) (Head, error) {
 	}
 	at := h.Record
 	for gen := h.Generation; gen > 0; gen-- {
-		rec, err := s.Record(at)
+		rec, err := s.recordFromDisk(at)
 		if err != nil {
 			return Head{}, err
 		}
@@ -292,7 +300,7 @@ func (s *Store) Verify(stream string) (Head, error) {
 			return Head{}, fmt.Errorf("%w: stream %s record %s is out of sequence", ErrTampered, stream, at)
 		}
 		for _, d := range append([]Digest{rec.Payload}, rec.Refs...) {
-			if _, err := s.Object(d); err != nil {
+			if _, err := s.objectFromDisk(d); err != nil {
 				return Head{}, err
 			}
 		}
