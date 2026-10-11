@@ -3,6 +3,7 @@ import { boot as bootLang } from "../src/i18n";
 import { track as trackWidth } from "../src/ui/viewport";
 import "../src/styles/tokens.css";
 import "../src/styles/app.css";
+import "../src/styles/dock.css";
 import "../src/styles/studio.css";
 import "../src/styles/feedback.css";
 import { App } from "../src/ui/App";

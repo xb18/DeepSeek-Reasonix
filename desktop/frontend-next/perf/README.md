@@ -68,6 +68,7 @@ node perf/find.mjs       # 对话内查找：快捷键穿过输入框、跳到�
 node perf/focus.mjs      # 专注的守卫：拿走外围之后，退出时世界是否原样
 node perf/tooltip.mjs    # 控件提示的守卫：文字不溢出提示框、不在半透明祖先之下、对比度达 AA（深浅×中英×宽窄）
 node perf/navhint.mjs   # Icon-rail hover hints: drawn, inside the window, clipped by no ancestor, painted over by nothing (light/dark × on/collapsed)
+node perf/dock.mjs      # 停靠的浏览器列从 pane 顶部起、与导航行并排，取消停靠后行归还（浅/深 × 宽/窄 × 首开/重载）
 ```
 
 `lang.mjs` 从仓库外跑时用 `PERF_SRC` 指向 `src/`（它要读固件源码来决定

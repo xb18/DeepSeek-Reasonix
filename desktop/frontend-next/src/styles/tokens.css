@@ -35,7 +35,7 @@
     --nav-open: 48px;
 
     --call-sym: 28px; --call-gap: 14px;
-    --rail-open: 264px; --side-open: 316px; --dock-open: 560px; --pane-gutter: 12px;
+    --rail-open: 264px; --side-open: 316px; --dock-open: 560px; --dock-left-min: 236px; --pane-gutter: 12px;
     --page: oklch(95.8% .0092 85); --surface: oklch(98.9% .0046 85);
     --raised: oklch(100% 0 85); --overlay: oklch(93.1% .0138 85);
     --border: oklch(87.6% .0184 85); --hair: oklch(91.7% .0126 85);

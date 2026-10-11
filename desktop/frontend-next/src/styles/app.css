@@ -744,7 +744,7 @@
      and the composer's; a child of the body would stop at the composer's edge. */
   .pane:has(> .pbody[data-dock]) {
     display: grid;
-    grid-template: "nav nav" auto "find find" auto "body side" minmax(0, 1fr) "compose side" auto / minmax(0, 1fr) var(--dock-w);
+    grid-template: "nav side" auto "find side" auto "body side" minmax(0, 1fr) "compose side" auto / minmax(var(--dock-left-min), 1fr) minmax(0, var(--dock-w));
   }
   .pane:has(> .pbody[data-dock]) > .tabs { grid-area: nav }
   .pane:has(> .pbody[data-dock]) > .findhost { grid-area: find }
@@ -757,8 +757,7 @@
     position: relative; inset: auto; grid-area: side; justify-self: start; align-self: stretch;
     width: 11px; margin-left: -6px; z-index: 6;
   }
-  .app[data-browser="off"] .pane > .gutter-r { margin-left: -14px }
-  .app[data-browser="off"] .pane:has(> .pbody[data-dock]) > .scroll[data-pane="browser"] { visibility: hidden; transition-property: visibility; transition-duration: 0s; transition-delay: var(--t-panel) }
+  .app[data-browser="off"] .pane > .gutter-r { margin-left: -14px }  .app[data-browser="off"] .pane:has(> .pbody[data-dock]) > .scroll[data-pane="browser"] { visibility: hidden; transition-property: visibility; transition-duration: 0s; transition-delay: var(--t-panel) }
   .pane:has(> .pbody[data-dock]) .workbench-body:not([data-files]) { grid-template-columns: minmax(0, 1fr) }
   .pane:has(> .pbody[data-dock]) .workbench-body:not([data-files]) .workbench-explorer { display: none }
   .pane:has(> .pbody[data-dock]) .workbench-body[data-files] { grid-template-columns: minmax(0, 1fr) }
@@ -2316,7 +2315,7 @@
   .railveil { display: none }
   [data-fold~="scene"] .cols { grid-template-columns: var(--nav-w) 0 minmax(0, 1fr) var(--side-w) }
   [data-fold~="scene"] :is(.gutter-l, .pane > .gutter-r) { display: none }
-  [data-fold~="scene"] .app[data-browser="on"] .pane:has(> .pbody[data-dock]) { grid-template-columns: 0 minmax(0, 1fr) }
+  [data-fold~="scene"] .app[data-browser="on"] .pane:has(> .pbody[data-dock]) { grid-template: "nav nav" auto "find find" auto "side side" minmax(0, 1fr) / 0 minmax(0, 1fr) }
   [data-fold~="scene"] .app[data-browser="on"] .pane:has(> .pbody[data-dock]) > :is(.pbody, .compose) { display: none }
   [data-fold~="scene"] .app[data-browser="on"] .pane:has(> .pbody[data-dock]) > .scroll[data-pane="browser"] { border-left: 0 }
   [data-fold~="scene"] .app[data-rail="on"] .railveil {
