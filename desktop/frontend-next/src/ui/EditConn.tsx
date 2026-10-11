@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { t } from "../i18n";
-import type { ProviderCheck, ProviderEntry } from "../port/port";
+import type { Protocol, ProviderCheck, ProviderEntry } from "../port/port";
 import { checkedFact, clearModelCheckFacts, ModelChoice, type ModelFact } from "./ModelChoice";
 import type { Port } from "./Providers";
 import { SAVED_NOT_APPLIED, reason, say } from "../i18n/kernel";
@@ -10,6 +10,7 @@ import { IDLE_TIMEOUT_MAX, IDLE_TIMEOUT_MIN, THINKING, headerLines, parseEffortL
 import { ModelEfforts } from "./ModelEfforts";
 import { EffortShape } from "./EffortShape";
 import type { ModelEffort, ModelLimit, ProviderEdit } from "../port/port";
+import { KIND_LABEL } from "./vendors";
 import { ModelLimits, limitTextOf, limitsToSend, type LimitText } from "./ModelLimits";
 
 // Only what this form owns is sent: the entry keeps its prices, effort
@@ -17,15 +18,25 @@ import { ModelLimits, limitTextOf, limitsToSend, type LimitText } from "./ModelL
 // declare opens the form on the reasoning fields: the composer sends a user
 // here when the endpoint reported no effort levels.
 export function EditConn({
-  entry, initialCheck, port, busy, setBusy, onDone, onRevert, onSaved, onDirty, declare = false, justSaved = false,
+  entry, wireFixed = false, initialCheck, port, busy, setBusy, onDone, onRevert, onSaved, onDirty, declare = false, justSaved = false,
 }: {
-  entry: ProviderEntry; initialCheck?: ProviderCheck; port: Port;
+  entry: ProviderEntry; wireFixed?: boolean; initialCheck?: ProviderCheck; port: Port;
   busy: string; setBusy: (b: string) => void; onDone: () => void | Promise<void>; onRevert: () => void; onSaved?: () => void; onDirty?: (dirty: boolean) => void;
   declare?: boolean; justSaved?: boolean;
 }) {
   const seededModels = [...new Set([...entry.models, ...(initialCheck?.models ?? [])])];
   const seededVision = [...new Set([...(entry.visionModels ?? []), ...(initialCheck?.vision ?? [])])];
   const [baseUrl, setBaseUrl] = useState(entry.baseUrl);
+  const [kind, setKind] = useState(entry.kind);
+  const [wires, setWires] = useState<Protocol[]>([]);
+  useEffect(() => {
+    let live = true;
+    Promise.resolve().then(() => port.protocols()).then((items) => live && setWires(items)).catch(() => live && setWires([]));
+    return () => { live = false; };
+  }, [port]);
+  const sameRole = (p: Protocol) => (p.answers ?? "chat") === (wires.find((w) => w.kind === entry.kind)?.answers ?? "chat");
+  // An account with a sibling door already switches between wires above; retyping one entry would make two doors of one kind.
+  const kinds = wireFixed ? [] : wires.some((w) => w.kind === entry.kind) ? wires.filter(sameRole).map((w) => w.kind) : [];
   const [completed, setCompleted] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [models, setModels] = useState<string[]>(seededModels);
@@ -143,7 +154,7 @@ export function EditConn({
         model,
         baseUrl: baseUrl.trim(),
         apiKey: apiKey.trim(),
-        kind: entry.kind,
+        kind,
       });
       setFacts((current) => ({
         ...current,
@@ -184,7 +195,7 @@ export function EditConn({
         setFacts((cur) => ({ ...cur, [m]: { ...(cur[m] ?? { origin: "configured" }), checking: true } }));
         let next: (fact: ModelFact | undefined) => ModelFact;
         try {
-          const got = await port.checkProviderModel({ name: entry.name, model: m, baseUrl: baseUrl.trim(), apiKey: apiKey.trim(), kind: entry.kind });
+          const got = await port.checkProviderModel({ name: entry.name, model: m, baseUrl: baseUrl.trim(), apiKey: apiKey.trim(), kind });
           next = (fact) => ({ ...checkedFact(fact, "configured", got), checking: false });
         } catch {
           next = (fact) => ({ ...(fact ?? { origin: "configured" }), status: "unknown", reason: "network", checking: false });
@@ -229,6 +240,7 @@ export function EditConn({
 
   const draft = (): ProviderEdit => ({
     name: entry.name,
+    ...(kind !== entry.kind && { kind }),
     baseUrl: baseUrl.trim(),
     apiKey: apiKey.trim(),
     models: picked,
@@ -301,6 +313,18 @@ export function EditConn({
       if (canSave) void save();
     }}>
       <div className="fields">
+        {kinds.length > 1 && (
+          <label className="grow full">
+            <span>{t("接口协议")}</span>
+            <select aria-label={t("接口协议")} value={kind} onChange={(e) => {
+              setKind(e.target.value);
+              setFacts(clearModelCheckFacts);
+            }} disabled={busy !== "" || checkingModel !== ""}>
+              {kinds.map((k) => <option key={k} value={k}>{t(KIND_LABEL[k] ?? k)}</option>)}
+            </select>
+            <i className="tip">{t("以服务商文档为准；模型列表无法可靠判断聊天协议。")}</i>
+          </label>
+        )}
         <label className="grow full">
           <span>{t("接口地址")}</span>
           <input value={baseUrl} onChange={(e) => {

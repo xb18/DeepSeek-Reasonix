@@ -134,5 +134,6 @@ it.each([false, true])("keeps normal edits and revert available before saving (S
   await userEvent.click(screen.getByRole("button", { name: "还原" }));
   expect(onRevert).toHaveBeenCalledTimes(1);
   expect(onDone).not.toHaveBeenCalled();
-  expect(fetch).not.toHaveBeenCalled();
+  const writes = fetch.mock.calls.filter(([url]) => !String(url).endsWith("/providers/protocols"));
+  expect(writes).toEqual([]);
 });

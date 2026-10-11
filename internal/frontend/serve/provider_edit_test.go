@@ -744,3 +744,86 @@ func richModelEntry(t *testing.T) *config.ProviderEntry {
 	}
 	return entry
 }
+
+func storedKind(t *testing.T, name string) string {
+	t.Helper()
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry, ok := cfg.Provider(name)
+	if !ok {
+		t.Fatalf("provider %q went missing", name)
+	}
+	return entry.Kind
+}
+
+// withIdleProvider adds a source nothing is running on, so an edit to it is a
+// plain save and does not need the test controller to speak every wire.
+func withIdleProvider(t *testing.T) {
+	t.Helper()
+	f, err := os.OpenFile(config.UserConfigPath(), os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	const idle = "\n[[providers]]\nname = \"idle\"\nkind = \"openai\"\nbase_url = \"https://idle.invalid/v1\"\nmodels = [\"m1\"]\ndefault = \"m1\"\ncontext_window = 131072\napi_key_env = \"IDLE_API_KEY\"\n"
+	if _, err := f.WriteString(idle); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEditProviderChangesTheProtocolAndKeepsTheRest(t *testing.T) {
+	srv := newRichProviderServer(t)
+	withIdleProvider(t)
+
+	resp := postProvider(t, srv.URL, "/providers/edit", `{"name":"idle","kind":"anthropic","models":["m1"],"default":"m1"}`)
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		b, _ := readAllString(resp)
+		t.Fatalf("POST /providers/edit = %d: %s", resp.StatusCode, b)
+	}
+	if got := storedKind(t, "idle"); got != "anthropic" {
+		t.Fatalf("kind = %q, want anthropic", got)
+	}
+	cfg, _ := config.Load()
+	entry, _ := cfg.Provider("idle")
+	if entry.ContextWindow != 131072 || entry.APIKeyEnv != "IDLE_API_KEY" {
+		t.Fatalf("the protocol change cost the entry its other fields: %+v", entry)
+	}
+}
+
+func TestEditProviderLeavesTheProtocolAloneWhenUnsent(t *testing.T) {
+	srv := newRichProviderServer(t)
+
+	resp := postProvider(t, srv.URL, "/providers/edit", `{"name":"rich","models":["alpha"],"default":"alpha"}`)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("POST /providers/edit = %d", resp.StatusCode)
+	}
+	if got := storedKind(t, "rich"); got != "openai" {
+		t.Fatalf("kind = %q, want openai", got)
+	}
+}
+
+func TestEditProviderRefusesAProtocolItCannotSwitchTo(t *testing.T) {
+	srv := newRichProviderServer(t)
+
+	for name, kind := range map[string]string{
+		"an unknown wire":                  "carrier-pigeon",
+		"a decision wire on a chat source": "typesafe",
+	} {
+		resp := postProvider(t, srv.URL, "/providers/edit", fmt.Sprintf(`{"name":"rich","kind":%q,"models":["alpha"],"default":"alpha"}`, kind))
+		var body struct {
+			Code string `json:"code"`
+		}
+		_ = json.NewDecoder(resp.Body).Decode(&body)
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusUnprocessableEntity || body.Code != "provider.kind_unsupported" {
+			t.Errorf("%s: status %d code %q, want 422 provider.kind_unsupported", name, resp.StatusCode, body.Code)
+		}
+		if got := storedKind(t, "rich"); got != "openai" {
+			t.Errorf("%s: kind = %q, the refused edit was written", name, got)
+		}
+	}
+}

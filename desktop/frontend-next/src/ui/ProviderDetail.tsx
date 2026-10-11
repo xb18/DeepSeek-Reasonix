@@ -211,6 +211,7 @@ export function ProviderDetail({
       <EditConn
         key={`${entry.name}:${revision}`}
         entry={entry}
+        wireFixed={a.kinds.length > 1}
         initialCheck={found?.ok ? found : undefined}
         port={port}
         busy={busy}

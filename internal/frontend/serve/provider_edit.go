@@ -25,8 +25,11 @@ func (s *Server) editProvider(w http.ResponseWriter, r *http.Request) {
 	// empty" stay different answers: a client that does not show them must not
 	// silently clear the headers a gateway needs.
 	var body struct {
-		Name            string   `json:"name"`
-		BaseURL         string   `json:"baseUrl"`
+		Name    string `json:"name"`
+		BaseURL string `json:"baseUrl"`
+		// The wire format. A different one is the same account spoken to
+		// another way, so it is a change to this entry, not a new entry.
+		Kind            *string  `json:"kind"`
 		APIKey          string   `json:"apiKey"`
 		Models          []string `json:"models"`
 		Default         string   `json:"default"`
@@ -77,6 +80,15 @@ func (s *Server) editProvider(w http.ResponseWriter, r *http.Request) {
 	}
 	if base := strings.TrimSpace(body.BaseURL); base != "" {
 		entry.BaseURL = base
+	}
+	if body.Kind != nil {
+		kind := strings.ToLower(strings.TrimSpace(*body.Kind))
+		if !config.SupportedProviderKind(kind) || config.AnswersFor(kind) != config.AnswersFor(entry.Kind) {
+			refuse(w, http.StatusUnprocessableEntity, "provider.kind_unsupported",
+				fmt.Sprintf("unsupported provider kind %q", kind), map[string]any{"kind": kind})
+			return
+		}
+		entry.Kind = kind
 	}
 	entry.Models = models
 	entry.Model = ""
@@ -172,7 +184,7 @@ func assemblyShape(e *config.ProviderEntry) string {
 		return v
 	}
 	shape := []any{
-		e.BaseURL, orNil(len(e.Models), e.Models), e.Vision, orNil(len(e.VisionModels), e.VisionModels),
+		e.Kind, e.BaseURL, orNil(len(e.Models), e.Models), e.Vision, orNil(len(e.VisionModels), e.VisionModels),
 		orNil(len(e.ModelOverrides), e.ModelOverrides), e.ContextWindow, e.MaxOutputTokens,
 		orNil(len(e.Headers), e.Headers), orNil(len(e.ExtraBody), e.ExtraBody), e.ReasoningProtocol,
 		orNil(len(e.SupportedEfforts), e.SupportedEfforts), e.DefaultEffort, e.IdleTimeoutSeconds,

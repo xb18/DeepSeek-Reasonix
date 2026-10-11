@@ -183,6 +183,8 @@ export interface ProviderModelCheckRequest {
 // Changing a source that already exists: everything else on the entry stays.
 export interface ProviderEdit {
   name: string;
+  // Omitted leaves the wire format alone.
+  kind?: string;
   baseUrl?: string;
   // Empty keeps the stored key.
   apiKey?: string;
