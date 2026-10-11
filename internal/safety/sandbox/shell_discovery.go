@@ -93,10 +93,14 @@ func resolveWithin(search *bashSearch, build func() shellHost, memo *sync.Map, p
 }
 
 // provenBashPath is the proven bash that sorts first, so the same memo always
-// names the same one.
+// names the same one. Only an entry whose value is struct{}{} is a proof; any
+// other record in the table (a remembered hang, say) is not.
 func provenBashPath(memo *sync.Map) (string, bool) {
 	best := ""
-	memo.Range(func(k, _ any) bool {
+	memo.Range(func(k, v any) bool {
+		if _, proven := v.(struct{}); !proven {
+			return true
+		}
 		if id, ok := k.(bashProbeIdentity); ok && (best == "" || id.path < best) {
 			best = id.path
 		}

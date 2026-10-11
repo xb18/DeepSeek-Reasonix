@@ -394,3 +394,18 @@ func TestResolveGivingUpPrefersABashProvenEarlier(t *testing.T) {
 		t.Fatalf("got %+v with warning %q", sh, warn.String())
 	}
 }
+
+func TestResolveGivingUpIgnoresMemoEntriesThatAreNotProofs(t *testing.T) {
+	release := make(chan struct{})
+	defer close(release)
+	type hungProbe struct{ at time.Time }
+	memo := new(sync.Map)
+	memo.Store(bashProbeIdentity{path: "a-hung-bash"}, hungProbe{at: time.Now()})
+	memo.Store(bashProbeIdentity{path: "z-proven-bash"}, struct{}{})
+	search := &bashSearch{budget: 100 * time.Millisecond, hedge: 20 * time.Millisecond}
+	var warn strings.Builder
+	sh := resolveWithin(search, func() shellHost { <-release; return hostWith(nil, nil, time.Second) }, memo, "auto", "", &warn)
+	if sh.Path != "z-proven-bash" {
+		t.Fatalf("got %+v, want the proven bash and not the one recorded as hung", sh)
+	}
+}
