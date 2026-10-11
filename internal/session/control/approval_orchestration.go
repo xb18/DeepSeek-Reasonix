@@ -313,7 +313,7 @@ func (c *Controller) ask(ctx context.Context, questions []event.AskQuestion, ori
 	// A question blocks the run on the user exactly like an approval prompt.
 	go c.hooks.Notification(ctx, askNotificationText(questions, origin), "question_prompt")
 
-	waitCtx, cancelWait := c.approval.waitContext(ctx)
+	waitCtx, cancelWait := c.askWaitContext(ctx, origin)
 	defer cancelWait()
 
 	select {
@@ -321,9 +321,7 @@ func (c *Controller) ask(ctx context.Context, questions []event.AskQuestion, ori
 		c.closeBarrier(id, barrierResolved)
 		return ans, nil
 	case <-waitCtx.Done():
-		c.approval.cancelAsk(id)
-		c.closeBarrier(id, barrierCancelled)
-		return nil, waitCtx.Err()
+		return c.endUnansweredAsk(waitCtx, id, reply)
 	}
 }
 
@@ -349,12 +347,12 @@ func (c *Controller) AnswerQuestionFrom(id string, answers []event.AskAnswer, vi
 				return
 			}
 		}
-		c.recordAskDecisionReceipt(id, pending, answers, via)
+		c.recordAskDecisionReceipt(id, pending, answers, "answered", via)
 		pending.reply <- answers // buffered, never blocks
 	}
 }
 
-func (c *Controller) recordAskDecisionReceipt(id string, pending pendingAsk, answers []event.AskAnswer, via *provider.Via) {
+func (c *Controller) recordAskDecisionReceipt(id string, pending pendingAsk, answers []event.AskAnswer, outcome string, via *provider.Via) {
 	if c == nil || c.executor == nil {
 		return
 	}
@@ -377,7 +375,7 @@ func (c *Controller) recordAskDecisionReceipt(id string, pending pendingAsk, ans
 		}
 		parts = append(parts, prompt+": "+answer)
 	}
-	subject, outcome := clipUTF8(strings.Join(parts, " · "), 240), "answered"
+	subject := clipUTF8(strings.Join(parts, " · "), 240)
 	if pending.origin != nil {
 		subject, outcome = formReceipt(pending.origin, pending.questions, answers)
 	}

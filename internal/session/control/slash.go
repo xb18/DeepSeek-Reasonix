@@ -90,6 +90,8 @@ func SlashArgItems(line string, d ArgData) ([]SlashItem, int) {
 		raw = languageArgItems(prior)
 	case "/currency":
 		raw = currencyArgItems(prior)
+	case "/ask-timeout":
+		raw = askTimeoutArgItems(prior)
 	case "/memory":
 		raw = memoryArgItems(prior, d)
 	case "/feedback":

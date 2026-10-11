@@ -377,6 +377,8 @@ export const EN_KERNEL: Record<string, string> = {
   "不支持这个币种，只能选自动、CNY 或 USD：{detail}": "That currency is not supported; choose Auto, CNY or USD: {detail}",
   "费用显示币种未能保存：{detail}": "The display currency was not saved: {detail}",
   "无进展设置未能保存：{detail}": "The progress settings were not saved: {detail}",
+  "提问等待时长未能保存：{detail}": "The question wait time was not saved: {detail}",
+  "等待时长超出允许范围，未做任何修改：{detail}": "That wait time is out of range; nothing was changed: {detail}",
   "自动归档设置未能保存：{detail}": "The auto-archive settings were not saved: {detail}",
   "天数超出允许范围，未做任何修改：{detail}": "The number of days is out of range; nothing was changed: {detail}",
   "主目录或磁盘根目录不能整体信任，请打开具体的项目文件夹": "A home directory or drive root cannot be trusted as a whole - open a specific project folder",

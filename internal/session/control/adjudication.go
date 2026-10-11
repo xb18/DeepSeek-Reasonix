@@ -22,6 +22,8 @@ const (
 	barrierOpen      = "open"
 	barrierResolved  = "resolved"
 	barrierCancelled = "cancelled"
+	// barrierTimedOut ends a question the host skipped under the user's ask timeout.
+	barrierTimedOut = "timed_out"
 	// barrierSuperseded ends a barrier no live waiter can: a later turn carried
 	// its context and took the work over. The edge names that turn, so the
 	// journal answers why the question stopped being asked with a cause rather

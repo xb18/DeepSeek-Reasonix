@@ -192,6 +192,7 @@ func RenderTOMLForScope(c *Config, scope RenderScope) string {
 		b.WriteString("# plan_mode_read_only_commands = [\"gh issue view\"]   # legacy compatibility only; Plan bash uses Permissions\n")
 	}
 	renderEmbeddedDiffDetection(&b, c)
+	renderAskTimeout(&b, c)
 	renderAgentDelegation(&b, c)
 	if c.Agent.SubagentEffort != "" {
 		fmt.Fprintf(&b, "subagent_effort = %q   # default effort for subagent entry points\n", c.Agent.SubagentEffort)

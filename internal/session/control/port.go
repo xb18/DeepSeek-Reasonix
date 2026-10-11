@@ -276,6 +276,8 @@ type RuntimeSettings interface {
 	SaveDisplayCurrency(mode string) error
 	ProgressWatchSettings() ProgressWatchSettings
 	SaveProgressWatchSettings(in ProgressWatchSettings) error
+	AskTimeoutSettings() AskTimeoutSettings
+	SaveAskTimeoutSettings(seconds int) error
 	AutoArchiveSettings() AutoArchiveSettings
 	SaveAutoArchiveSettings(in AutoArchiveSettings) error
 	ArchiveInactiveSessions() int

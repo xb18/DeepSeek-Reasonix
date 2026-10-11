@@ -537,6 +537,7 @@ export const EN: Record<string, string> = {
   "记的是 {had}，但它答的是 {got}。": "Recorded as {had}, but it answers as {got}.",
   // 收工回执
   "没有未经验证的部分": "nothing left unverified",
+  "等待超时，这个问题已被跳过": "Nobody answered in time; this question was skipped",
   "未验证": "not verified",
   "交付验收": "delivery receipt",
   "留空时按这个顺序尝试：先 ssh-agent 持有的密钥，再 ~/.ssh 下的默认密钥；只有填了下面的环境变量或该机器要求交互时，才会走密码。": "Left blank, it tries in this order: keys held by ssh-agent, then the default keys under ~/.ssh. A password is only used when one of the variables below is set, or the machine asks interactively.",

@@ -1,5 +1,5 @@
 import type { Adjudications, BrowserToolsSettings, ConfigProblem, ConfigRepair, PermissionLists, PermissionRules, SandboxSettings } from "./port";
-import type { AutoArchiveSettings, DisplayCurrencyMode, DisplayCurrencySettings, ProgressWatchSettings } from "./boundary";
+import type { AskTimeoutSettings, AutoArchiveSettings, DisplayCurrencyMode, DisplayCurrencySettings, ProgressWatchSettings } from "./boundary";
 import { MockShell } from "./mock_shell";
 
 // The boundary half of the fixture: what the agent is refused outright, and how
@@ -131,6 +131,18 @@ export class MockBoundary extends MockShell {
     pause: false, rounds: 20, tokenMultiple: 8, defaultRounds: 20, defaultTokenMultiple: 8,
     path: "/Users/you/.reasonix/config.toml",
   };
+
+  private ask: AskTimeoutSettings = { seconds: 0, defaultSeconds: 300, minSeconds: 10, maxSeconds: 86400, path: "/Users/you/.reasonix/config.toml" };
+
+  async askTimeout(): Promise<AskTimeoutSettings> {
+    return { ...this.ask };
+  }
+
+  async saveAskTimeout(seconds: number): Promise<AskTimeoutSettings> {
+    if (seconds !== 0 && (seconds < this.ask.minSeconds || seconds > this.ask.maxSeconds)) throw new Error("ask timeout out of range");
+    this.ask = { ...this.ask, seconds };
+    return { ...this.ask };
+  }
 
   async progressWatch(): Promise<ProgressWatchSettings> {
     return { ...this.watch };

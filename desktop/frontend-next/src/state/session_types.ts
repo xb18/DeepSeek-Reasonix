@@ -39,7 +39,7 @@ export type Item =
   // kernel recorded they said, since this screen never saw the selection.
   // recorded is the call's result when the card is rebuilt from history: the
   // record keeps what the model was told, not which options were pressed.
-  | { t: "ask"; id: string; ask: Ask; answered?: string[][]; answeredElsewhere?: boolean; by?: Via | "window"; said?: string; recorded?: string }
+  | { t: "ask"; id: string; ask: Ask; answered?: string[][]; answeredElsewhere?: boolean; timedOut?: boolean; by?: Via | "window"; said?: string; recorded?: string }
   | { t: "compaction"; id: string; c: Compaction; done: boolean }
   | { t: "remember"; id: string; m: RememberedFact; forgotten?: boolean }
   | { t: "receipt"; id: string; r: Receipt }

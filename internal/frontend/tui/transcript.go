@@ -560,6 +560,9 @@ func (t *Transcript) sealByReceipt(r *eventwire.DecisionReceipt) {
 		}
 		if (it.Kind == ItemApproval && it.Approval.ID == r.ID) || (it.Kind == ItemAsk && it.Ask.ID == r.ID) {
 			it.Verdict = "elsewhere"
+			if it.Kind == ItemAsk && r.Outcome == "timed_out" {
+				it.Verdict = "timed out"
+			}
 		}
 	}
 }

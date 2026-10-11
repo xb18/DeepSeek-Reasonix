@@ -319,3 +319,18 @@ func TestTurnStartSeatsTheMessageItBeganOn(t *testing.T) {
 		t.Fatalf("another client's turn drawn %d times", n)
 	}
 }
+
+// A question the host skipped on the ask timeout is settled as that, not as one
+// someone answered elsewhere.
+func TestAskSkippedOnTimeoutIsSettledAsTimedOut(t *testing.T) {
+	tr := &Transcript{}
+	tr.Apply(eventwire.Event{Kind: "ask_request", Ask: &eventwire.Ask{ID: "q9", Questions: []eventwire.AskQuestion{{ID: "q1", Prompt: "Which?"}}}})
+	tr.Apply(eventwire.Event{Kind: "notice", Code: "decision_receipt", Text: "Decision recorded: timed_out",
+		DecisionReceipt: &eventwire.DecisionReceipt{ID: "q9", Kind: "ask", Outcome: "timed_out"}})
+	if tr.OpenPrompt() != nil {
+		t.Fatal("a skipped question stayed open")
+	}
+	if got := tr.Items[0].Verdict; got != "timed out" {
+		t.Fatalf("verdict = %q, want timed out", got)
+	}
+}

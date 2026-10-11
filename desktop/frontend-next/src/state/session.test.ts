@@ -725,3 +725,16 @@ describe("compaction digest restart", () => {
   });
 
 });
+
+describe("an ask the host skipped on timeout", () => {
+  it("is sealed by its receipt as timed out, not as answered elsewhere by someone", () => {
+    const asked = run([
+      { kind: "turn_started" } as SessionEvent,
+      { kind: "ask_request", ask: { id: "a1", questions: [{ id: "q1", header: "H", prompt: "Which?", options: [{ label: "A" }, { label: "B" }] }] } } as SessionEvent,
+    ]);
+    const sealed = reduce(asked, { kind: "notice", decisionReceipt: { id: "a1", kind: "ask", outcome: "timed_out", subject: "Which?: —" } } as SessionEvent);
+    const ask = sealed.items.find((i) => i.t === "ask") as Extract<Item, { t: "ask" }>;
+    expect(ask.timedOut).toBe(true);
+    expect(ask.answered).toEqual([]);
+  });
+});

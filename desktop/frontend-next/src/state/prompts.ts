@@ -47,7 +47,7 @@ export function sealByReceipt(s: SessionState, r: DecisionReceipt): SessionState
   if (at < 0) return s; // already sealed here, or never on this screen
   const items = s.items.slice();
   const it = items[at];
-  if (it.t === "ask") items[at] = { ...it, answered: [], answeredElsewhere: true, by: r.via ?? "window", said: r.subject };
+  if (it.t === "ask") items[at] = { ...it, answered: [], answeredElsewhere: true, timedOut: r.outcome === "timed_out", by: r.via ?? "window", said: r.subject };
   else if (it.t === "approval") items[at] = { ...it, verdict: verdictOf(r.outcome), by: r.via ?? "window" };
   else return s;
   return { ...s, doing: it.t === "ask" ? (s.running ? RUNNING : IDLE) : s.doing, items };

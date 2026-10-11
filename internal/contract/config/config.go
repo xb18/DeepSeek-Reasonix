@@ -1133,10 +1133,9 @@ type AgentConfig struct {
 	// ColdResumePrune elides stale tool results when a session reopens past the
 	// provider cache window. nil = default enabled.
 	ColdResumePrune *bool `toml:"cold_resume_prune"`
-	// EmbeddedDiffDetection opts into marking a shell result whose whole output
-	// is a unified diff, so a frontend renders it as a diff instead of flat text.
-	// nil = default off.
+	// EmbeddedDiffDetection marks a shell result that is a whole unified diff; nil = off.
 	EmbeddedDiffDetection *bool `toml:"embedded_diff_detection"`
+	AskTimeoutSeconds     int   `toml:"ask_timeout_seconds"` // user file only; 0 waits
 	// PlanModeReadOnlyCommands is retained for old config/session round trips. Main
 	// Plan bash calls now use the ordinary Permissions classifier and Sandbox.
 	PlanModeReadOnlyCommands []string `toml:"plan_mode_read_only_commands"`

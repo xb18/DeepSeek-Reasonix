@@ -247,6 +247,8 @@ export function AskCard({ item, onAnswer }: Props) {
               <div className="ask-done" data-recorded={item.recorded !== undefined ? "" : undefined}>
                 {item.recorded !== undefined ? (
                   item.recorded
+                ) : item.timedOut ? (
+                  <b>{t("等待超时，这个问题已被跳过")}</b>
                 ) : item.answeredElsewhere ? (
                   <b>{answeredBy || t("已在其他窗口处理，请以最新运行状态为准。")}</b>
                 ) : (

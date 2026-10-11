@@ -107,6 +107,18 @@ export interface DisplayCurrencySettings {
 
 // When a run reads as no longer moving. Only the user file holds it: a
 // project file cannot pause the user's runs.
+// How long an ask question waits before the host skips it; 0 waits. The user
+// file holds it, so the terminal reads the same answer.
+export interface AskTimeoutSettings {
+  seconds: number;
+  // The kernel's code for a value the file holds that cannot be applied.
+  invalid?: string;
+  defaultSeconds: number;
+  minSeconds: number;
+  maxSeconds: number;
+  path: string;
+}
+
 export interface ProgressWatchSettings {
   pause: boolean;
   rounds: number;

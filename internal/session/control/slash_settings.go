@@ -36,6 +36,8 @@ func (c *Controller) settingsNotice(fields []string, trimmed string) bool {
 		c.languageNotice(fields)
 	case "/currency":
 		c.currencyNotice(fields)
+	case "/ask-timeout":
+		c.askTimeoutNotice(fields)
 	default:
 		return false
 	}

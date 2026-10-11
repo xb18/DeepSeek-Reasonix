@@ -1,6 +1,6 @@
 import { SseShell } from "./sse_shell";
 import type { Adjudications, BrowserToolsSettings, ConfigProblem, ConfigRepair, PermissionLists, PermissionRules, SandboxSettings } from "./port";
-import type { AutoArchiveSettings, DisplayCurrencyMode, DisplayCurrencySettings, ProgressWatchSettings } from "./boundary";
+import type { AskTimeoutSettings, AutoArchiveSettings, DisplayCurrencyMode, DisplayCurrencySettings, ProgressWatchSettings } from "./boundary";
 
 // Where the agent may reach: the permission rules a call is matched against and
 // the sandbox the shell runs in.
@@ -49,6 +49,12 @@ export class SseBoundary extends SseShell {
   }
   saveAutoArchive(s: Pick<AutoArchiveSettings, "enabled" | "days">) {
     return this.post0<AutoArchiveSettings>("/auto-archive", s);
+  }
+  askTimeout() {
+    return this.get<AskTimeoutSettings>("/ask-timeout");
+  }
+  saveAskTimeout(seconds: number) {
+    return this.post0<AskTimeoutSettings>("/ask-timeout", { seconds });
   }
   configProblem() {
     return this.get<ConfigProblem | null>("/config/problem");

@@ -30,6 +30,7 @@ import { ConfigTrouble } from "./ConfigTrouble";
 import { Compaction } from "./Compaction";
 import { Sandbox } from "./Sandbox";
 import { BrowserTools } from "./BrowserTools";
+import { AskTimeout } from "./AskTimeout";
 import { ProgressWatch } from "./ProgressWatch";
 import { AutoArchive } from "./AutoArchive";
 import { Account } from "./Account";
@@ -496,6 +497,7 @@ export function Settings({ hub, onError, port, networkPort, networkHost, status,
                   />
                 </div>
               </Group>
+              <AskTimeout port={port} />
               <ProgressWatch port={port} />
               <AutoArchive port={port} />
               <Group id="session-dir" title={t("会话写入位置")}>

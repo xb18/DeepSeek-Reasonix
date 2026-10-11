@@ -237,6 +237,9 @@ type Messages struct {
 	LanguageHint              string // how to select a language
 	LanguageChangedFmt        string // "/language <tag>" succeeded, %s = saved tag, %s = resolved tag
 	CurrencyHeader            string // header above the /currency listing
+	AskTimeoutFmt             string // /ask-timeout status, one %s state
+	AskTimeoutOff             string // the word for the ask timeout being off
+	AskTimeoutBadFmt          string // /ask-timeout argument that is neither a number nor off, one %s
 	CurrencyHint              string // how to select a pricing currency
 	CurrencyChangedFmt        string // "/currency <mode>" succeeded, %s = saved mode, %s = resolved currency
 	RuntimeRefreshBusy        string // runtime-affecting setting cannot change while work is active
@@ -374,6 +377,7 @@ type Messages struct {
 	CmdTheme             string // /theme
 	CmdLanguage          string // /language
 	CmdCurrency          string // /currency
+	CmdAskTimeout        string // /ask-timeout
 	CmdSkill             string // /skills
 	CmdVerbose           string // /verbose
 	CmdReloadCmd         string // /reload-cmd

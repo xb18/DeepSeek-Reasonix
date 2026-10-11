@@ -7,6 +7,7 @@ import (
 	"reasonix/internal/state/sessionstore"
 	"strings"
 	"testing"
+	"time"
 
 	"reasonix/internal/contract/event"
 	"reasonix/internal/contract/provider"
@@ -238,6 +239,27 @@ func TestAnsweredAskInvalidatesRemainingCallsFromItsProviderBatch(t *testing.T) 
 	for _, i := range []int{2, 3} {
 		if !strings.Contains(batch.results[i], "stopped at a question") {
 			t.Errorf("call %d result = %q, want it named as deferred", i+1, batch.results[i])
+		}
+	}
+}
+
+type timedOutAsker struct{}
+
+func (timedOutAsker) Ask(context.Context, []event.AskQuestion) ([]event.AskAnswer, error) {
+	return nil, fmt.Errorf("asker: %w", &AskTimedOutError{After: 90 * time.Second})
+}
+
+// A skipped question reaches the model as the host's own timeout, not as an
+// empty answer and not as a tool failure.
+func TestAskToolTellsTheModelTheQuestionTimedOut(t *testing.T) {
+	ctx := WithCallContext(context.Background(), "call_1", event.Discard, timedOutAsker{}, false)
+	out, err := NewAskTool().Execute(ctx, []byte(`{"questions":[{"header":"H","question":"Which?","options":[{"label":"A"},{"label":"B"}]}]}`))
+	if err != nil {
+		t.Fatalf("a timeout surfaced as a tool failure: %v", err)
+	}
+	for _, want := range []string{"skipped:", "90 seconds", "timeout, not an answer", "no option was chosen", "conclude_blocked"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("result lacks %q:\n%s", want, out)
 		}
 	}
 }
