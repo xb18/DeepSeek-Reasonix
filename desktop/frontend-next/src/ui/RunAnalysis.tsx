@@ -154,6 +154,7 @@ export function RunAnalysis({ rows, availability, onSave }: {
       {signals.length > 0 && (
         <section className="run-signals">
           <div className="run-section-head"><b>{t("信号轨")}</b><span>{t("与下方共用时间轴")}</span></div>
+          <p className="run-section-note">{t("没有时长、也不是工具调用的运行记录（最多前 8 条），按发生的时刻摆在时间轴上，所以位置就是时间，无法拖动；点一个看它的记录。")}</p>
           <div className="run-signal-line">
             {signals.map((row) => (
               <button data-action="analysis.signal" data-target={String(row.seq)} key={row.seq} style={{ left: `${(row.at / Math.max(span, 1)) * 100}%` }} onClick={(e) => toggle(row.seq, "signal", e.currentTarget)} title={spanText(row.payload)}>

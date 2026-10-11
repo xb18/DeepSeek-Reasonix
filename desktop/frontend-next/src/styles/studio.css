@@ -3496,6 +3496,7 @@ body { font-size: 14px; line-height: 1.75; }
 .run-analysis-head b { font-size: 16px; letter-spacing: -.015em; }
 .run-analysis-head small,
 .run-section-head span { color: var(--faint); font: var(--w-reg) 11px/1.4 var(--mono); }
+.run-section-note { margin: -4px 0 10px; color: var(--faint); font: var(--w-reg) 11px/1.55 var(--ui); }
 .run-live { display: inline-flex; align-items: center; gap: 7px; color: var(--net); font: var(--w-reg) 11px var(--mono); }
 .run-live i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 12%, transparent); }
 .run-analysis-actions { display: flex; align-items: center; gap: 9px; }

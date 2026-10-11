@@ -16,6 +16,19 @@ const rows: TrajRow[] = [
 const onSave = async () => null;
 
 describe("RunAnalysis", () => {
+  it("says what the signal rail is for and why its marks do not move", () => {
+    const moments: TrajRow[] = [...rows, { seq: 4, at: 2, kind: "note", payload: [{ t: "checkpoint" }], subs: [] }];
+    render(<RunAnalysis rows={moments} onSave={onSave} />);
+    expect(screen.getByText("信号轨")).toBeTruthy();
+    expect(screen.getByText(/位置就是时间，无法拖动/)).toBeTruthy();
+  });
+
+  it("draws no rail, and no explanation of one, when nothing is a moment", () => {
+    render(<RunAnalysis rows={rows.slice(0, 2)} onSave={onSave} />);
+    expect(screen.queryByText("信号轨")).toBeNull();
+    expect(screen.queryByText(/位置就是时间/)).toBeNull();
+  });
+
   it("summarises recorded activity and exposes an inspectable timeline", () => {
     render(<RunAnalysis rows={rows} onSave={onSave} />);
     expect(screen.getByText("运行分析")).toBeTruthy();
