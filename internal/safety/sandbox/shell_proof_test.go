@@ -367,18 +367,30 @@ func TestPowerShellDiscoveryKeepsPreferenceOrder(t *testing.T) {
 	}
 }
 
-func TestResolveGivesUpOnALookupNoProbeBudgetCovers(t *testing.T) {
+func TestResolveGivesUpWhenBuildingTheHostNeverReturns(t *testing.T) {
 	release := make(chan struct{})
 	defer close(release)
-	h := hostWith(nil, nil, 100*time.Millisecond)
-	h.lookPath = func(string) (string, error) { <-release; return "", os.ErrNotExist }
+	search := &bashSearch{budget: 100 * time.Millisecond, hedge: 20 * time.Millisecond}
 	var warn strings.Builder
 	begin := time.Now()
-	sh := resolveWithin(h, "auto", "", &warn)
+	sh := resolveWithin(search, func() shellHost { <-release; return hostWith(nil, nil, time.Second) }, new(sync.Map), "auto", "", &warn)
 	if took := time.Since(begin); took > 3*time.Second {
-		t.Fatalf("resolution took %v behind a hung lookup", took)
+		t.Fatalf("resolution took %v behind a host that never built", took)
 	}
-	if sh.Kind != ShellBash || !strings.Contains(warn.String(), "did not finish") {
-		t.Fatalf("got %+v with warning %q, want the bare bash and a warning", sh, warn.String())
+	if sh.Kind != ShellBash || sh.Path != "bash" || !strings.Contains(warn.String(), "did not finish") || !strings.Contains(warn.String(), "Restarting") {
+		t.Fatalf("got %+v with warning %q, want the bare bash and a warning that says restarting recovers", sh, warn.String())
+	}
+}
+
+func TestResolveGivingUpPrefersABashProvenEarlier(t *testing.T) {
+	release := make(chan struct{})
+	defer close(release)
+	memo := new(sync.Map)
+	memo.Store(bashProbeIdentity{path: "git-bash"}, struct{}{})
+	search := &bashSearch{budget: 100 * time.Millisecond, hedge: 20 * time.Millisecond}
+	var warn strings.Builder
+	sh := resolveWithin(search, func() shellHost { <-release; return hostWith(nil, nil, time.Second) }, memo, "auto", "", &warn)
+	if sh.Path != "git-bash" || !strings.Contains(warn.String(), "proven earlier") {
+		t.Fatalf("got %+v with warning %q", sh, warn.String())
 	}
 }

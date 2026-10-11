@@ -23,50 +23,66 @@ type ShellDiscovery struct {
 	// Probe replaces the bash launch probe. The in-process memo is private to this call; proofs still persist to ProofDir.
 	Probe  func(string) bool
 	Budget time.Duration
-	Hedge  time.Duration
+	// LookPath replaces the PATH lookup, so a caller can drive a lookup that never returns.
+	LookPath func(string) (string, error)
+	Hedge    time.Duration
 }
 
 // Resolve is ResolveShell with the discovery settings above.
 func (d ShellDiscovery) Resolve() Shell {
-	h := currentHost()
 	memo := &provenBash
 	if d.Probe != nil {
 		memo = new(sync.Map)
 	}
 	store := newShellProofStore(d.ProofDir)
-	h.probe = func(path string) bool {
-		run := d.Probe
-		if run == nil {
-			if runtime.GOOS != "windows" {
-				return true
-			}
-			run = runBashProbe
+	search := &bashSearch{budget: d.Budget, hedge: d.Hedge}
+	build := func() shellHost {
+		h := currentHost()
+		if d.LookPath != nil {
+			h.lookPath = d.LookPath
 		}
-		return proveBash(path, run, store, memo)
+		h.probe = func(path string) bool {
+			run := d.Probe
+			if run == nil {
+				if runtime.GOOS != "windows" {
+					return true
+				}
+				run = runBashProbe
+			}
+			return proveBash(path, run, store, memo)
+		}
+		h.search = search
+		return h
 	}
-	h.search = &bashSearch{budget: d.Budget, hedge: d.Hedge}
-	return resolveWithin(h, d.Prefer, d.Path, d.Warn)
+	return resolveWithin(search, build, memo, d.Prefer, d.Path, d.Warn)
 }
 
-// resolveWithin bounds the whole resolution, not only its launch probes: a
-// PATH entry on a dead share or a registry read can stall a lookup that no
-// probe budget covers. Past two budgets the session gets the bare name, as when
-// nothing is found, and the abandoned lookup finishes into the proof store.
-func resolveWithin(h shellHost, prefer, path string, warn io.Writer) Shell {
-	budget, _ := h.search.timing()
+// resolveWithin bounds the whole resolution, host construction included: a PATH
+// entry on a dead share or a registry read can stall a lookup that no probe
+// budget covers. Past the bash and PowerShell budgets together the session gets
+// a bash already proven in this process, else the bare name as when nothing is
+// found; the abandoned lookup finishes into the proof store.
+func resolveWithin(search *bashSearch, build func() shellHost, memo *sync.Map, prefer, path string, warn io.Writer) Shell {
+	budget, hedge := search.timing()
+	limit := 2*budget + hedge
 	var mu sync.Mutex
 	var log strings.Builder
 	got := make(chan Shell, 1)
 	go func() {
-		w := io.Writer(lockedWriter{&mu, &log})
-		got <- resolveOn(h, prefer, path, w)
+		got <- resolveOn(build(), prefer, path, lockedWriter{&mu, &log})
 	}()
 	var sh Shell
 	select {
 	case sh = <-got:
-	case <-time.After(2 * budget):
-		sh = Shell{Kind: ShellBash, Path: "bash"}
-		fmt.Fprintf(&lockedWriter{&mu, &log}, "warning: [tools.shell] interpreter discovery did not finish within %s; falling back to %q, which may fail to start\n", 2*budget, "bash")
+	case <-time.After(limit):
+		w := lockedWriter{&mu, &log}
+		if proven, ok := provenBashPath(memo); ok {
+			sh = Shell{Kind: ShellBash, Path: proven}
+			fmt.Fprintf(w, "warning: [tools.shell] interpreter discovery did not finish within %s; using %q, which was proven earlier in this run\n", limit, proven)
+		} else {
+			sh = Shell{Kind: ShellBash, Path: "bash"}
+			fmt.Fprintf(w, "warning: [tools.shell] interpreter discovery did not finish within %s; falling back to %q, which may fail to start. Restarting Reasonix usually recovers\n", limit, "bash")
+		}
 	}
 	if warn != nil {
 		mu.Lock()
@@ -74,6 +90,19 @@ func resolveWithin(h shellHost, prefer, path string, warn io.Writer) Shell {
 		mu.Unlock()
 	}
 	return sh
+}
+
+// provenBashPath is the proven bash that sorts first, so the same memo always
+// names the same one.
+func provenBashPath(memo *sync.Map) (string, bool) {
+	best := ""
+	memo.Range(func(k, _ any) bool {
+		if id, ok := k.(bashProbeIdentity); ok && (best == "" || id.path < best) {
+			best = id.path
+		}
+		return true
+	})
+	return best, best != ""
 }
 
 type lockedWriter struct {

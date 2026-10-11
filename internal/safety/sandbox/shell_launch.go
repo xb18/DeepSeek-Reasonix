@@ -71,6 +71,7 @@ func probePowerShell(path string) bool {
 // environment, and a working directory outside the workspace.
 func powerShellProbeCommand(ctx context.Context, path string) *exec.Cmd {
 	cmd := exec.CommandContext(ctx, path, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "exit 0")
+	cmd.WaitDelay = probeWaitDelay
 	cmd.Env = secrets.ProcessEnv()
 	cmd.Dir = os.TempDir()
 	proc.HideWindow(cmd)

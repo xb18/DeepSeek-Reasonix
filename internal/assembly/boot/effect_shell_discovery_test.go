@@ -95,3 +95,19 @@ func TestEffectProvenShellIsNotLaunchedAgainByTheNextStart(t *testing.T) {
 		t.Fatalf("second start %v not faster than first %v", second, first)
 	}
 }
+
+func TestEffectHungPathLookupDoesNotHoldTheAssemblyPastItsLimit(t *testing.T) {
+	isolateConfigHome(t)
+	release := make(chan struct{})
+	defer close(release)
+	phases, took := slowShellBuild(t, "hung-lookup", func(d *sandbox.ShellDiscovery) {
+		d.LookPath = func(string) (string, error) { <-release; return "", os.ErrNotExist }
+		d.Budget, d.Hedge = 300*time.Millisecond, 50*time.Millisecond
+	})
+	if took > 10*time.Second {
+		t.Fatalf("Build took %v behind a PATH lookup that never returned, want the discovery limit", took)
+	}
+	if !slices.Contains(phases, "shell") || !slices.Contains(phases, "prompt") {
+		t.Fatalf("trace %v lacks the phases after shell discovery gave up", phases)
+	}
+}

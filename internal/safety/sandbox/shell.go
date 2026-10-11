@@ -91,7 +91,7 @@ type shellHost struct {
 	winPS    []string
 	probe    func(string) bool
 	isWSL    func(string) bool
-	launches func(string) bool // whether a found PowerShell starts; asked only of the one about to win
+	launches func(string) bool // whether a found PowerShell starts; asked of every candidate at once
 	search   *bashSearch       // nil means the defaults
 }
 
@@ -370,6 +370,10 @@ func probeBash(path string) bool {
 // bash for good.
 const bashProbeTimeout = 10 * time.Second
 
+// probeWaitDelay bounds the wait for a killed probe to actually exit: a process
+// held in the kernel by security software outlives its context otherwise.
+const probeWaitDelay = 2 * time.Second
+
 // bashProbeFailures remembers, per path, why the last probe of it failed.
 var bashProbeFailures sync.Map
 
@@ -382,6 +386,7 @@ func runBashProbe(path string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), bashProbeTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, path, "-c", "true")
+	cmd.WaitDelay = probeWaitDelay
 	cmd.Env = secrets.ProcessEnv()
 	proc.HideWindow(cmd)
 	if cmd.Run() == nil {
