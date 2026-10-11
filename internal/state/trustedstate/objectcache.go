@@ -20,6 +20,7 @@ type cachedObject struct {
 	data []byte
 	size int64
 	mod  time.Time
+	id   fileID
 	read time.Time
 }
 
@@ -37,12 +38,13 @@ func (s *Store) rememberObject(path string, data []byte, info fs.FileInfo) {
 	if s.objects.byPath == nil || len(s.objects.byPath) >= maxCachedCount || s.objects.bytes+len(data) > maxCachedBytes {
 		s.objects = objectCache{byPath: map[string]cachedObject{}}
 	}
-	s.objects.byPath[path] = cachedObject{data: append([]byte(nil), data...), size: info.Size(), mod: info.ModTime(), read: s.now()}
+	s.objects.byPath[path] = cachedObject{data: append([]byte(nil), data...), size: info.Size(), mod: info.ModTime(), id: fileIdentity(info), read: s.now()}
 	s.objects.bytes += len(data)
 }
 
-// cachedObject answers from memory only while the file still shows the size
-// and modification time it had when its bytes were verified, and only when that
+// cachedObject answers from memory only while the file still shows the size,
+// modification time and identity (inode, change time) it had when its bytes
+// were verified, and only when that
 // modification was old enough for a later one to have changed the time.
 func (s *Store) cachedObject(path string) ([]byte, bool) {
 	s.mu.Lock()
@@ -52,7 +54,7 @@ func (s *Store) cachedObject(path string) ([]byte, bool) {
 		return nil, false
 	}
 	info, err := s.statFile(path)
-	if err != nil || info.Size() != entry.size || !info.ModTime().Equal(entry.mod) {
+	if err != nil || info.Size() != entry.size || !info.ModTime().Equal(entry.mod) || fileIdentity(info) != entry.id {
 		return nil, false
 	}
 	return append([]byte(nil), entry.data...), true

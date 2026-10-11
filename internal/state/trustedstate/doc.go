@@ -14,4 +14,8 @@
 // object too; objects are published by a non-replacing hard link, so competing
 // writers verify the winner. The head is the only file ever replaced, by
 // rename so a crash leaves either the old head or the new one.
+//
+// Object remembers what it verified, in process, and serves it while the file
+// keeps its size, times and identity; Verify is the call that always reads the
+// bytes from disk.
 package trustedstate

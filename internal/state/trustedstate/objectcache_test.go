@@ -142,3 +142,86 @@ func TestACoarseTimestampKeepsTheLongRacyWindow(t *testing.T) {
 		t.Fatalf("read %d times, want every read to reach the file while a whole-second mtime is this recent", n)
 	}
 }
+
+func TestAnEditThatRestoresSizeAndModificationTimeIsStillSeenThroughTheChangeTime(t *testing.T) {
+	s, _ := countingStore(t)
+	d, _ := s.PutObject([]byte("payload"))
+	path, _ := s.objectPath(d)
+	info := settled(t, path)
+	if fileIdentity(info) == (fileID{}) {
+		t.Skip("this platform exposes no file identity beyond size and time")
+	}
+	if _, err := s.Object(d); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("PAYLOAD"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(path, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Object(d); !errors.Is(err, ErrTampered) {
+		t.Fatalf("Object = %v, want ErrTampered: the change time moved although size and mtime were restored", err)
+	}
+}
+
+func TestAReplacedFileIsNotServedFromMemory(t *testing.T) {
+	s, reads := countingStore(t)
+	d, _ := s.PutObject([]byte("payload"))
+	path, _ := s.objectPath(d)
+	info := settled(t, path)
+	if _, err := s.Object(d); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("payload"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(path, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	before := reads.Load()
+	if got, err := s.Object(d); err != nil || string(got) != "payload" {
+		t.Fatalf("Object = %q, %v", got, err)
+	}
+	if fileIdentity(info) != (fileID{}) && reads.Load() == before {
+		t.Fatal("a file replaced behind the cache was answered from memory")
+	}
+}
+
+// Past its limits the cache empties and starts over; every read stays right.
+func TestTheCacheStaysCorrectPastItsLimits(t *testing.T) {
+	s, _ := countingStore(t)
+	var digests []Digest
+	for i := range maxCachedCount + 50 {
+		d, err := s.PutIndexObject([]byte("object-" + string(rune('a'+i%26)) + string(rune('A'+i/26%26)) + string(rune('0'+i/676))))
+		if err != nil {
+			t.Fatal(err)
+		}
+		path, _ := s.objectPath(d)
+		settled(t, path)
+		digests = append(digests, d)
+	}
+	for round := range 2 {
+		for _, d := range digests {
+			got, err := s.Object(d)
+			if err != nil || DigestOf(got) != d {
+				t.Fatalf("round %d: Object(%s) = %q, %v", round, d, got, err)
+			}
+		}
+	}
+	if len(s.objects.byPath) > maxCachedCount {
+		t.Fatalf("cache holds %d entries, limit %d", len(s.objects.byPath), maxCachedCount)
+	}
+	big := make([]byte, maxCachedObject+1)
+	d, _ := s.PutObject(big)
+	path, _ := s.objectPath(d)
+	settled(t, path)
+	for range 2 {
+		if got, err := s.Object(d); err != nil || len(got) != len(big) {
+			t.Fatalf("oversized object: %d bytes, %v", len(got), err)
+		}
+	}
+}
