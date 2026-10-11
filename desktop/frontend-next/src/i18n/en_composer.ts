@@ -18,6 +18,7 @@ export const EN_COMPOSER: Record<string, string> = {
   "正在停止…": "Stopping…",
   "正在发送…": "Sending…",
   "描述任务、问题或要改的内容…": "Describe a task, question, or change…",
+  "描述任务…": "Describe a task…",
   "任务输入": "Task input",
   "命令与技能": "Commands and skills",
   "正在加载命令与技能…": "Loading commands and skills…",

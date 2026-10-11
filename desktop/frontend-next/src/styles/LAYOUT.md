@@ -628,6 +628,13 @@ told apart by the colour of a symbol.
   - Under it the rail is a drawer, not a column (see *Phones*). No seam is left
     to drag and the chrome's rail button is the entrance, so the grip goes; so
     does the workbench grip, whose entrance is the 「工作台」 tab.
+- The title bar folds the same way: it gathers its controls under one button, it does not drop them.
+  - Below 300px of room (`bar`, in `viewport.ts`) the phone, find, theme, sandbox and browser buttons move into one
+    popover under a "more" button, every one still a press away.
+  - 300 is derived, not chosen: unfolded, the controls leave the title `room - 196` px, and 4em is its floor.
+  - `perf/narrow.mjs` sweeps the room from 190 to 460 and asserts the title keeps that floor, and that each control is
+    on screen with nothing over it, folded or not.
+  - Below `bar` the page tabs shrink and ellipsise rather than clip, and the meter row drops its cache figure first.
 - When both side columns have yielded, the transcript rail yields too; its ticks
   and viewport remain separately reachable.
 - A short window divides its height proportionally, and what is left over is the

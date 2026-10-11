@@ -10,6 +10,7 @@ import { effortMenu, effortReading, effortsFor, forcesThinkingFor, routeEffortPi
 import { CompletionMenu, useCompletion } from "./Completion";
 import { ChipMirror, useSkillChips } from "./ChipMirror";
 import { useIme } from "./ime";
+import { usePlaceholderFit } from "./placeholderfit";
 import { useFitHeight } from "./fitHeight";
 import { countLines, pasteIsLong, planTone, planVerb } from "./intake";
 import { kindOf, nameOf, previewURL } from "./chipfile";
@@ -198,6 +199,7 @@ export function Composer({ port, status, running, quote, restore, focus, onSubmi
     pending.current = null;
   }, []);
   useFitHeight(box, text, placeCaret);
+  const placeholder = usePlaceholderFit(box, [t("描述任务、问题或要改的内容…"), t("描述任务…"), "…"]);
 
   // Attachments ride into the turn as path references, exactly as they do from
   // the CLI — the host saved the bytes, the turn parser resolves the token. A
@@ -493,7 +495,7 @@ export function Composer({ port, status, running, quote, restore, focus, onSubmi
           rows={1}
           value={text}
           data-chips={chips.list.length > 0 ? "" : undefined}
-          placeholder={t("描述任务、问题或要改的内容…")}
+          placeholder={placeholder}
           role="combobox"
           aria-label={t("任务输入")}
           aria-describedby={guide}

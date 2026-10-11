@@ -12,6 +12,8 @@ describe("layout folds", () => {
     expect(foldsAt(1200)).toBe("rail");
     expect(foldsAt(840)).toBe("rail side");
     expect(foldsAt(640)).toBe("rail side scene");
+    expect(foldsAt(301)).toBe("rail side scene");
+    expect(foldsAt(300)).toBe("rail side scene bar");
   });
 
   it("accumulates, so a narrower window never un-folds a wider one's column", () => {

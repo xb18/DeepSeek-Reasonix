@@ -151,7 +151,7 @@ export function Appearance({ port, theme, onTheme, contrast, onContrast, weight,
   const set = useCallback((patch: Partial<Look>) => onLook({ ...look, ...patch }), [look, onLook]);
   // Until the kernel has announced its range there is nothing to draw the
   // slider from; it is held inert rather than given a range of its own.
-  const zoomRange = look.zoomRange ?? { min: 0, max: 1, step: 1 };
+  const zoomRange = look.zoomRange ?? { min: 0, max: 2, step: 1 };
   const setPaper = useCallback(
     (patch: Partial<NonNullable<Look["wallpaper"]>>) =>
       look.wallpaper && onLook({ ...look, wallpaper: { ...look.wallpaper, ...patch } }),

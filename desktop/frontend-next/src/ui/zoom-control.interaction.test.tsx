@@ -55,6 +55,15 @@ describe("the interface size control", () => {
     expect(slider().parentElement!.querySelector(".now")!.textContent).toBe("180%");
   });
 
+  it("parks the thumb mid-track while the kernel has announced no range", async () => {
+    const { paint, again } = await open();
+    paint.result.current.look.zoomRange = undefined;
+    again();
+    expect(slider().disabled).toBe(true);
+    const at = (Number(slider().value) - Number(slider().min)) / (Number(slider().max) - Number(slider().min));
+    expect(at).toBe(0.5);
+  });
+
   it("marks the preset a click chose and leaves the body text size alone", async () => {
     const { paint, again } = await open();
     fireEvent.click(screen.getByRole("button", { name: "宽松" }));

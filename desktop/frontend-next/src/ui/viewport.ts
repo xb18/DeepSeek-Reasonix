@@ -12,6 +12,7 @@ const FOLDS = [
   { upTo: 1200, fold: "rail" }, // the workspace column goes
   { upTo: 840, fold: "side" }, // metrics moves under the flow
   { upTo: 640, fold: "scene" }, // the opening scene tightens
+  { upTo: 300, fold: "bar" }, // the bar's controls gather into one: unfolded they leave the title under its 4em floor
 ] as const;
 
 // Height folds the same way width does, and for the same reason: every surface
