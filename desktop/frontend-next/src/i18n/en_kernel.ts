@@ -120,6 +120,8 @@ export const EN_KERNEL: Record<string, string> = {
   "本机的 sandbox-exec 不可用，命令将不受限制地运行": "sandbox-exec is unusable on this machine, so commands run unconfined",
   "Windows 上尚无操作系统级沙箱，命令将不受限制地运行": "Windows has no OS-level sandbox here yet, so commands run unconfined",
   "该平台尚无可用的沙箱后端，命令将不受限制地运行": "This platform has no usable sandbox backend yet, so commands run unconfined",
+  "没有这个预设": "No curated preset has this id.",
+  "这个预设会创建多个来源，名称由预设决定": "This preset creates several sources and keeps its own names.",
   "本机没有操作系统沙箱，「关进沙箱」一档无法保存": "This machine has no OS sandbox, so the jailed mode cannot be saved",
 
   "该文件夹仍有 {n} 个打开的面板，请先关闭再移除": "This folder still has {n} open panes — close them before removing it",

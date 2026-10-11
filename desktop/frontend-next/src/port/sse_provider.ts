@@ -1,5 +1,5 @@
 import { SseBoundary } from "./sse_boundary";
-import type { Protocol, ProviderCheck, ProviderDraft, ProviderEdit, ProviderEntry, ProviderModelCheck, ProviderModelCheckRequest, ProviderProbe } from "./port";
+import type { Protocol, ProviderCheck, ProviderDraft, ProviderEdit, ProviderEntry, ProviderModelCheck, ProviderModelCheckRequest, ProviderPreset, ProviderPresetInstall, ProviderProbe } from "./port";
 
 // Where models come from: the accounts, the protocols their endpoints answer,
 // and what probing one found.
@@ -9,6 +9,14 @@ export class SseProvider extends SseBoundary {
   }
   protocols() {
     return this.get<Protocol[]>("/providers/protocols");
+  }
+
+  providerPresets() {
+    return this.get<ProviderPreset[]>("/providers/presets");
+  }
+
+  installProviderPreset(req: ProviderPresetInstall) {
+    return this.post0<{ names: string[] }>("/providers/presets/install", req);
   }
 
   // A refused key, a path the endpoint does not serve and an embedding-only

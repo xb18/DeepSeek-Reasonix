@@ -7,6 +7,8 @@ import type {
   ProviderEntry,
   ProviderModelCheck,
   ProviderModelCheckRequest,
+  ProviderPreset,
+  ProviderPresetInstall,
   ProviderProbe,
 } from "./port";
 import { MockBoundary } from "./mock_boundary";
@@ -81,6 +83,19 @@ export class MockProvider extends MockBoundary {
       { kind: "responses", discovery: "openai", serverWebSearch: true, reasoningParams: true, effortField: "reasoning.effort", effortUnder: [] },
       { kind: "anthropic", discovery: "anthropic", serverWebSearch: true, reasoningParams: false, effortField: "output_config.effort", effortUnder: ["anthropic"] },
     ];
+  }
+
+  async providerPresets(): Promise<ProviderPreset[]> {
+    return [
+      { id: "kimi-cn", label: "Kimi CN API", kind: "openai", baseUrl: "https://api.moonshot.cn/v1" },
+      { id: "kimi-global", label: "Kimi Global API", kind: "openai", baseUrl: "https://api.moonshot.ai/v1" },
+      { id: "stepfun", label: "StepFun", kind: "openai", baseUrl: "https://api.stepfun.com/v1" },
+      { id: "stepfun-anthropic", label: "StepFun Anthropic", kind: "anthropic", baseUrl: "https://api.stepfun.com/anthropic" },
+    ];
+  }
+
+  async installProviderPreset(req: ProviderPresetInstall): Promise<{ names: string[] }> {
+    return { names: [req.name?.trim() || req.presetId] };
   }
 
   // The opening sequence is the only way into the fixture, and it advances on

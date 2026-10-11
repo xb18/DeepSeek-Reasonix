@@ -406,6 +406,8 @@ const SAID: Record<string, string> = {
   "sandbox.no_sandbox_exec": "本机的 sandbox-exec 不可用，命令将不受限制地运行",
   "sandbox.unsupported_on_windows": "Windows 上尚无操作系统级沙箱，命令将不受限制地运行",
   "sandbox.unsupported_platform": "该平台尚无可用的沙箱后端，命令将不受限制地运行",
+  "provider.preset_unknown": "没有这个预设",
+  "provider.preset_named_entries": "这个预设会创建多个来源，名称由预设决定",
   "sandbox.unavailable": "本机没有操作系统沙箱，「关进沙箱」一档无法保存",
   "remote.install_disabled": "{host} 上没有 reasonix，且本机已设置为不自动安装。请将安装方式改回「自动」，或自行在该机器上安装",
   "remote.npm_unavailable": "{host} 上无法运行 npm —— 通常是该机器未安装 Node.js。请安装 Node.js，或将安装方式改为「上传」",

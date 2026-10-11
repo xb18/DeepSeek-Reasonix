@@ -43,6 +43,7 @@ function harness(over: { edit?: (e: ProviderEdit) => Promise<void>; extra?: Prov
       }
       return [...disk.values()].map((e) => ({ ...e }));
     }),
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => []),
     removeProvider: vi.fn(async (name: string) => { disk.delete(name); }),
     editProvider: vi.fn(async (e: ProviderEdit) => {

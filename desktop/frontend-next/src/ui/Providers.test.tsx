@@ -32,6 +32,7 @@ const entry = (name: string, baseUrl: string, inUse = false): ProviderEntry => (
 function draw(list: ProviderEntry[]) {
   const port = {
     providers: vi.fn(async () => list),
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => []),
   } as unknown as Port;
   render(<Providers port={port} onChanged={() => {}} onFailed={() => {}} protocol={{}}
@@ -101,6 +102,7 @@ function drawRenamable(list: ProviderEntry[]) {
   let current = list;
   const port = {
     providers: vi.fn(async () => current),
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => []),
     renameProvider: vi.fn(async (names: string[], displayName: string) => {
       current = current.map((p) => (names.includes(p.name) ? { ...p, displayName: displayName || undefined } : p));

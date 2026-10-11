@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Clip } from "./Clip";
 import { useEscape } from "./dismiss";
 import { t } from "../i18n";
-import type { Protocol, ProviderCheck, ProviderDraft, ProviderEdit, ProviderEntry, ProviderModelCheck, ProviderModelCheckRequest, ProviderProbe } from "../port/port";
+import type { Protocol, ProviderCheck, ProviderDraft, ProviderEdit, ProviderEntry, ProviderModelCheck, ProviderModelCheckRequest, ProviderPreset, ProviderPresetInstall, ProviderProbe } from "../port/port";
 import { AddProvider } from "./AddProvider";
 import { ProviderDetail } from "./ProviderDetail";
 import { accountKey, accountLabel, disambiguate, hostOf } from "./vendors";
@@ -20,6 +20,8 @@ import { StudioIcon } from "./StudioIcon";
 export type Port = {
   providers(): Promise<ProviderEntry[]>;
   protocols(): Promise<Protocol[]>;
+  providerPresets(): Promise<ProviderPreset[]>;
+  installProviderPreset(req: ProviderPresetInstall): Promise<{ names: string[] }>;
   probeProvider(baseUrl: string, apiKey: string): Promise<ProviderProbe>;
   saveProvider(draft: ProviderDraft): Promise<void>;
   removeProvider(name: string): Promise<void>;

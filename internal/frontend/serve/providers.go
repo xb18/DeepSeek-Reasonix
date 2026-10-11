@@ -38,6 +38,8 @@ func (s *Server) AllowProviderEdit() { s.grants.providerEdit = true }
 func (s *Server) registerProviderRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /providers", s.providers)
 	mux.HandleFunc("GET /providers/protocols", s.providerProtocols)
+	mux.HandleFunc("GET /providers/presets", s.providerPresets)
+	mux.HandleFunc("POST /providers/presets/install", s.installProviderPreset)
 	mux.HandleFunc("POST /providers", s.saveProvider)
 	mux.HandleFunc("POST /providers/probe", s.probeProvider)
 	mux.HandleFunc("POST /providers/remove", s.removeProvider)
@@ -338,33 +340,7 @@ func (s *Server) saveProvider(w http.ResponseWriter, r *http.Request) {
 	if taken {
 		entry.DisplayName = prev.DisplayName
 	}
-	entry.APIKeyEnv, err = keyEnvForNewSource(known, entry.Name, entry.BaseURL, body.APIKey, body.Replace)
-	if err != nil {
-		writeErr(w, http.StatusInternalServerError, err)
-		return
-	}
-	if key := strings.TrimSpace(body.APIKey); key != "" {
-		if _, err := config.SetCredential(entry.APIKeyEnv, key); err != nil {
-			// The slot is derived from the name, so this is the person's to
-			// fix and the name is the field to point them at — not the key,
-			// which is what an unclassified failure here reads as.
-			if errors.Is(err, config.ErrInvalidCredentialKey) {
-				refuse(w, http.StatusBadRequest, "provider.bad_key_slot",
-					"the name does not make a usable credential slot",
-					map[string]any{"name": entry.Name, "slot": entry.APIKeyEnv})
-				return
-			}
-			writeErr(w, http.StatusInternalServerError, err)
-			return
-		}
-	}
-	cfg := config.LoadForEdit(config.UserConfigPath())
-	if err := cfg.UpsertProvider(entry); err != nil {
-		writeErr(w, http.StatusBadRequest, err)
-		return
-	}
-	if err := cfg.SaveTo(config.UserConfigPath()); err != nil {
-		writeErr(w, http.StatusInternalServerError, err)
+	if !storeProviderEntries(w, known, []config.ProviderEntry{entry}, body.APIKey, body.Replace) {
 		return
 	}
 	// No rebuild: the model list and every switch read config from disk, so the

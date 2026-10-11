@@ -96,6 +96,23 @@ export interface Protocol {
   effortUnder?: string[];
 }
 
+// A curated starting point the kernel offers. Choosing one creates the whole
+// declared entry — catalog, window, vision models, thinking shape — in the
+// kernel; the person supplies only a name and a key.
+export interface ProviderPreset {
+  id: string;
+  label: string;
+  kind: string;
+  baseUrl: string;
+}
+
+export interface ProviderPresetInstall {
+  presetId: string;
+  // Empty takes the preset's own name, made unique by the kernel.
+  name?: string;
+  apiKey: string;
+}
+
 // What an endpoint turned out to be. Every field is a guess the user confirms
 // before anything is written — a model list cannot prove which protocol a
 // gateway speaks, only which ones it answers.

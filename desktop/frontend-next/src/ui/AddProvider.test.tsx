@@ -12,6 +12,7 @@ it("saves an explicitly configured source without requiring protocol detection",
   const saveProvider = vi.fn(async () => {});
   const probeProvider = vi.fn();
   const port = {
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => [
       { kind: "openai", discovery: "openai", serverWebSearch: false, reasoningParams: true },
       { kind: "anthropic", discovery: "anthropic", serverWebSearch: true, reasoningParams: true },
@@ -43,6 +44,7 @@ it("saves an explicitly configured source without requiring protocol detection",
 it("keeps relay-only controls optional and saves them when disclosed", async () => {
   const saveProvider = vi.fn(async () => {});
   const port = {
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => [
       { kind: "openai", discovery: "openai", serverWebSearch: false, reasoningParams: true },
     ]),
@@ -69,7 +71,7 @@ const nameCatalog = async () => [{ kind: "openai", discovery: "openai", serverWe
 
 it("explains an unusable source name next to the field while it is typed and holds the add button", async () => {
   const saveProvider = vi.fn(async () => {});
-  const port = { protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
 
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
   const field = screen.getByLabelText("来源名称");
@@ -93,7 +95,7 @@ it("shows a coded name refusal from the kernel on the name field, not as a conne
   const saveProvider = vi.fn(async () => {
     throw new HttpError(409, "taken", { code: "provider.name_taken", params: { name: "relay" } });
   });
-  const port = { protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
 
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
   await userEvent.type(screen.getByLabelText("来源名称"), "relay");
@@ -113,7 +115,7 @@ it("titles a failed save as a save failure, never as a connection failure", asyn
   const saveProvider = vi.fn(async () => {
     throw new HttpError(422, "pick at least one model", { code: "provider.endpoint_required" });
   });
-  const port = { protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
 
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
   await userEvent.type(screen.getByLabelText("来源名称"), "relay");
@@ -127,7 +129,7 @@ it("titles a failed save as a save failure, never as a connection failure", asyn
 
 it("ties the name rule to the field and the button, and waits out IME composition", async () => {
   const { fireEvent } = await import("@testing-library/react");
-  const port = { protocols: vi.fn(nameCatalog), saveProvider: vi.fn() } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider: vi.fn() } as unknown as Port;
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
   const field = screen.getByLabelText("来源名称");
   expect(field.getAttribute("aria-describedby")).toBe("addp-name-rule");
@@ -143,7 +145,7 @@ it("ties the name rule to the field and the button, and waits out IME compositio
 it("keeps Add disabled while an IME name is still being composed", async () => {
   const { fireEvent } = await import("@testing-library/react");
   const saveProvider = vi.fn();
-  const port = { protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
 
   const name = screen.getByLabelText("来源名称");
@@ -170,7 +172,7 @@ it("keeps Add disabled while an IME name is still being composed", async () => {
 it("normalizes spaces around an ASCII name and refuses a blank one", async () => {
   const { fireEvent } = await import("@testing-library/react");
   const saveProvider = vi.fn(async () => {});
-  const port = { protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
+  const port = { providerPresets: vi.fn(async () => []), protocols: vi.fn(nameCatalog), saveProvider } as unknown as Port;
   render(<AddProvider port={port} taken={[]} known={[]} onDone={() => {}} onCancel={() => {}} />);
 
   const name = screen.getByLabelText("来源名称");
@@ -199,6 +201,7 @@ it("saves the address the probe resolved, not the bare host that was typed", asy
     models: ["model-x"], default: "model-x", efforts: [], effort: "", vision: [], ambiguous: false, noProxy: false,
   }));
   const port = {
+    providerPresets: vi.fn(async () => []),
     protocols: vi.fn(async () => [{ kind: "openai", discovery: "openai", serverWebSearch: false, reasoningParams: true }]),
     saveProvider,
     probeProvider,

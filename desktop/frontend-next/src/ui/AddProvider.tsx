@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { t } from "../i18n";
-import type { Protocol, ProviderEntry, ProviderProbe } from "../port/port";
+import type { Protocol, ProviderEntry, ProviderPreset, ProviderProbe } from "../port/port";
+import { PresetGallery } from "./PresetGallery";
+import { PresetInstall } from "./PresetInstall";
 import { checkedFact, clearModelCheckFacts, ModelChoice, type ModelFact } from "./ModelChoice";
 import { KIND_LABEL, hostOf, nameFrom, sourceNameUsable, vendorLabel } from "./vendors";
 import type { Port } from "./Providers";
@@ -23,6 +25,7 @@ export function AddProvider({
   const [completed, setCompleted] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [probe, setProbe] = useState<ProviderProbe | null>(null);
+  const [preset, setPreset] = useState<ProviderPreset | null>(null);
   const [catalog, setCatalog] = useState<Protocol[]>([]);
   const [err, setErr] = useState("");
   const [errOnSave, setErrOnSave] = useState(false);
@@ -38,6 +41,7 @@ export function AddProvider({
       setKind((current) => current || (items.some((p) => p.kind === "openai") ? "openai" : items[0]?.kind ?? ""));
     }).catch(() => setCatalog([]));
   }, [port]);
+  const loadPresets = useCallback(() => port.providerPresets(), [port]);
   const choices = catalog.map((p) => p.kind);
   const detectedChoices = probe ? (probe.kinds?.length ? probe.kinds : [probe.kind]) : [];
   const searchOn = detectedChoices.filter((k) => catalog.find((p) => p.kind === k)?.serverWebSearch);
@@ -175,6 +179,8 @@ export function AddProvider({
     }
   };
 
+  if (preset) return <PresetInstall port={port} preset={preset} onDone={onDone} onCancel={onCancel} onBack={() => setPreset(null)} />;
+
   return (
     <fieldset className="addp" disabled={busy && errOnSave}>
       <div className="addp-head">
@@ -185,6 +191,7 @@ export function AddProvider({
         </div>
         <button className="addp-close" onClick={onCancel} disabled={busy || checkingModel !== ""} aria-label={t("取消")}>×</button>
       </div>
+      {baseUrl.trim() === "" && <PresetGallery load={loadPresets} onPick={setPreset} disabled={busy || checkingModel !== ""} />}
       <div className="fields">
         <div className="grow name-cell">
         <label>
