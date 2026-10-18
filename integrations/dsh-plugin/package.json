@@ -1,0 +1,34 @@
+{
+  "name": "dsh-plugin-reasonix",
+  "version": "0.1.0",
+  "description": "Use Reasonix as a subagent in DeepSeek Harness (dsh) through its ACP provider. Configuration only, no code.",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "reasonix",
+    "acp",
+    "subagent"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esengine/DeepSeek-Reasonix.git",
+    "directory": "integrations/dsh-plugin"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": {
+    "dsh": "0.2.1-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-subagent-acp": "0.2.1-rc.2"
+  },
+  "private": true
+}

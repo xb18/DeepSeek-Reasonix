@@ -55,6 +55,16 @@ dsh plugin --profile <profile> add @deepseek-ai/dsh-subagent-acp@<dsh version>
 
 `maxDepth: provider-managed` is required: the provider cannot enforce a depth cap in the child, and `dsh` refuses to load the tool row without it.
 
+## Ready-made package
+
+The same two rows ship as a Harness bundle in this repository, `integrations/dsh-plugin`, so steps 1 and 2 can be one command. It is not on npm; `pnpm` installs the subdirectory through its `path:` selector (see [pnpm package sources](https://pnpm.io/package-sources)):
+
+```sh
+dsh plugin --profile <profile> add github:esengine/DeepSeek-Reasonix#path:/integrations/dsh-plugin
+```
+
+The bundle pins `@deepseek-ai/dsh-subagent-acp` and `dsh` to the same version (`0.2.1-rc.2` today) and uses `permission: reject`. Change the policy in your own `cordis.patch.yml`, never in the package.
+
 ## Configuration reference
 
 | Key | Where | Meaning |
