@@ -188,7 +188,7 @@ export class MockBoundary extends MockShell {
     this.peerState = { ...this.peerState, held: this.peerState.held.filter((h) => h.id !== id) };
   }
 
-  protected modConfig: ModsSettings = { enabled: false, hook_budget_ms: 0, path: "/Users/you/.reasonix/config.toml", applies: "next_session" };
+  protected modConfig: ModsSettings = { enabled: false, hook_budget_ms: 0, path: "/Users/you/.reasonix/config.toml", available: false, applies: "next_session" };
 
   async modsSettings(): Promise<ModsSettings> {
     return { ...this.modConfig };
