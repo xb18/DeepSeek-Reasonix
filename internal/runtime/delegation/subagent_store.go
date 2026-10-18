@@ -89,14 +89,15 @@ type SubagentStore struct {
 	locked map[string]bool
 	// live holds the conversation of every run this process is executing, so a
 	// reader sees a child while it works: its file is written only at the end.
-	live map[string]*sessionstore.Session
+	live  map[string]*liveRun
+	steer steerState
 }
 
 func NewSubagentStore(dir string) *SubagentStore {
 	if strings.TrimSpace(dir) == "" {
 		return nil
 	}
-	return &SubagentStore{dir: dir, locked: map[string]bool{}, live: map[string]*sessionstore.Session{}}
+	return &SubagentStore{dir: dir, locked: map[string]bool{}, live: map[string]*liveRun{}}
 }
 
 // WithDestroyedChecker makes saves for destroyed parent sessions no-op. This is

@@ -1,0 +1,2 @@
+- 新增：模型可用 task 的 task_id 给运行中的子代理补充指示，它在下一次调用工具时读到；设置里可调单条大小和每分钟上限。关联 #13693。
+- Added: The model can give a running sub-agent more guidance with task's task_id, read at its next tool call; Settings sets the size and per-minute limits. Refs #13693.

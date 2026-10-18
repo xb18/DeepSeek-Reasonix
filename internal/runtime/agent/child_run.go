@@ -334,6 +334,9 @@ func newDelegatedAgent(ctx context.Context, prov provider.Provider, reg *tool.Re
 	if _, _, asker, ok := CallContext(ctx); ok && asker != nil {
 		sub.SetAsker(asker)
 	}
+	if opts.OnStart != nil {
+		opts.OnStart(sub)
+	}
 	return sub
 }
 

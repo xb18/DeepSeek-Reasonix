@@ -1,0 +1,2 @@
+- 变更：task 工具新增 task_id 参数，升级后的第一轮对话，工具说明的缓存会冷一次，之后恢复。关联 #13693。
+- Changed: The task tool gains a task_id parameter, so the tool-description cache is cold once on the first turn after upgrading and then warm again. Refs #13693.

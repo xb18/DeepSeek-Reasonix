@@ -75,6 +75,8 @@ reasoning_language = "auto"      # visible reasoning text: auto|zh|en
 # max_side_sessions = 0              # side conversations open at once; 0 = no limit (user config only)
 # max_provider_retries = 10          # retries of a failed provider connection before the turn stops; 0 = keep trying until cancelled (user config only)
 # max_queued_inputs = 0              # prompts waiting in a session's queue; 0 = no limit, the queue's byte limits still apply (user config only)
+# max_subagent_steer_bytes = 16384    # bytes in one message of guidance to a running sub-agent, which keeps one message from filling its context; 0 = no limit (user config only)
+# max_subagent_steers_per_minute = 30  # messages of guidance per minute to one running sub-agent, a stop for a loop; 0 = no limit (user config only)
 # write_lease = "optimistic"          # user file only; a writer that declares no path (bash, MCP) stops holding the whole workspace
 # subagent_claims = "optimistic"      # user file only; a sub-agent that declares no write_paths holds only the path it is writing, not the whole workspace against other sessions; default strict
 # plan_approval = "auto"             # user file only; a submitted plan starts executing without the approval click, and the transcript says so; default ask
@@ -1923,6 +1925,19 @@ full answer into a truncation-prone tool result. The parent can call
 are scoped to the current conversation lineage and workspace. Headless runs
 without a persisted parent session remain ephemeral and receive fair bounded
 previews, but cannot mint durable references.
+
+A sub-agent that is still running can be sent guidance:
+
+- The model calls `task` with `task_id` set to the sub-agent's `sa_...` reference
+  and the guidance as `prompt`. You send it from Settings or the sub-agent's view.
+- The sub-agent reads it at its next tool call, framed as coming from the
+  delegating session (or from you). Its own approvals still apply.
+- If the sub-agent has already finished, `task_id` continues its transcript
+  exactly as `continue_from` does.
+- `max_subagent_steer_bytes` and `max_subagent_steers_per_minute` bound one
+  message and the rate (user config only; Settings > Tools > Guidance to running
+  sub-agents; `0` lifts a limit).
+- Guidance cannot be sent from a paired device.
 
 The interactive two-model Planner uses a dedicated construction path
 (`NewPlannerAgent`): it still blocks bash, file writers, and ordinary writers,

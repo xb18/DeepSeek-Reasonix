@@ -7,12 +7,12 @@ import "fmt"
 // one is a stall, and raising the depth is unbounded cost, so the user's own
 // file decides all of them.
 type agentLimits struct {
-	concurrency, writers, depth, sideSessions, queuedInputs, providerRetries int
+	concurrency, writers, depth, sideSessions, queuedInputs, providerRetries, steerBytes, steersPerMinute int
 }
 
 func holdAgentLimits(c *Config) agentLimits {
 	a := c.Agent
-	return agentLimits{a.MaxSubagentConcurrency, a.MaxParallelWriters, a.MaxSubagentDepth, a.MaxSideSessions, a.MaxQueuedInputs, a.MaxProviderRetries}
+	return agentLimits{a.MaxSubagentConcurrency, a.MaxParallelWriters, a.MaxSubagentDepth, a.MaxSideSessions, a.MaxQueuedInputs, a.MaxProviderRetries, a.SubagentSteerBytes, a.SubagentSteerPerMinute}
 }
 
 func (h heldScope) narrowAgentLimits(c *Config) {
@@ -27,6 +27,8 @@ func (h heldScope) narrowAgentLimits(c *Config) {
 		{"agent.max_side_sessions", &c.Agent.MaxSideSessions, h.limits.sideSessions},
 		{"agent.max_queued_inputs", &c.Agent.MaxQueuedInputs, h.limits.queuedInputs},
 		{"agent.max_provider_retries", &c.Agent.MaxProviderRetries, h.limits.providerRetries},
+		{"agent.max_subagent_steer_bytes", &c.Agent.SubagentSteerBytes, h.limits.steerBytes},
+		{"agent.max_subagent_steers_per_minute", &c.Agent.SubagentSteerPerMinute, h.limits.steersPerMinute},
 	} {
 		if *l.now != l.held {
 			c.ignoreProject(l.key, fmt.Sprint(*l.now), ProjectUserOnly)

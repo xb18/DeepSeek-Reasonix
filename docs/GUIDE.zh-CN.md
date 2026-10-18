@@ -84,6 +84,8 @@ reasoning_language = "auto"      # 可见思考过程语言：auto|zh|en
 # max_side_sessions = 0              # 同时打开的辅助会话数；0 = 不限制（只认用户级配置）
 # max_provider_retries = 10          # 模型接口连接失败后的重试次数，用完这一轮就停；0 = 一直重试直到取消（只认用户级配置）
 # max_queued_inputs = 0              # 会话队列里等待发送的消息条数；0 = 不限制，队列的字节上限仍然生效（只认用户级配置）
+# max_subagent_steer_bytes = 16384    # 发给运行中子代理的单条指示的字节数，防止一条消息占满它的上下文；0 = 不限制（只认用户级配置）
+# max_subagent_steers_per_minute = 30  # 每分钟发给同一个运行中子代理的指示条数，用来刹住循环；0 = 不限制（只认用户级配置）
 # write_lease = "optimistic"          # 仅用户配置文件；没有声明路径的写入（bash、MCP）不再占住整个工作区，默认 strict
 # plan_approval = "auto"             # 仅用户配置文件；提交的计划不再等待批准点击，直接开始执行，对话里会留下说明，默认 ask
 # subagent_claims = "optimistic"      # 仅用户配置文件；没有声明 write_paths 的子代理只占用正在写的路径，不占整个工作区，默认 strict
@@ -1513,6 +1515,14 @@ destructive MCP 目标、来自未授权 server 的 reader，以及一切会改�
 可用 `read_subagent_result` 按 `offset_bytes` 分页读取该引用对应的完整答案；读取范围受当前
 会话 lineage 与工作区约束。没有持久化父会话的 headless 运行仍保持 ephemeral，只返回公平
 分配的有界预览，不能生成持久引用。
+
+仍在运行的子代理可以收到补充指示：
+
+- 模型调用 `task` 时把 `task_id` 设为该子代理的 `sa_...` 引用、指示写在 `prompt` 里；你则在设置或子代理的界面里发送。
+- 子代理在下一次调用工具时读到它，标明来自委派它的会话（或来自你）；它自己的批准照常生效。
+- 子代理若已结束，`task_id` 的效果与 `continue_from` 相同，接着它的对话继续。
+- 单条大小和每分钟条数由 `max_subagent_steer_bytes`、`max_subagent_steers_per_minute` 限制（只认用户级配置，设置 → 工具 → 给运行中子代理的指示；填 `0` 表示不设上限）。
+- 配对设备不能发送这种指示。
 
 交互式双模型 Planner 使用专用构造路径（`NewPlannerAgent`）：仍阻止 bash、文件写入与普通
 writer，但可通过固定的 `use_capability` 代理调用已授权、非 destructive 的 MCP，不再要求

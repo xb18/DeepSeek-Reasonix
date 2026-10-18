@@ -1,4 +1,4 @@
-import type { Adjudications, BrowserToolsSettings, SubagentClaimsSettings, WriteLeaseSettings, PlanApprovalSettings, PeerReceipt, PeersState, PeersSettings, PeersSettingsEdit, PeerRemember, ConfigProblem, ConfigRepair, PermissionLists, PermissionRules, SandboxSettings, UpdateMode } from "./port";
+import type { Adjudications, BrowserToolsSettings, SubagentClaimsSettings, SubagentSteerSettings, WriteLeaseSettings, PlanApprovalSettings, PeerReceipt, PeersState, PeersSettings, PeersSettingsEdit, PeerRemember, ConfigProblem, ConfigRepair, PermissionLists, PermissionRules, SandboxSettings, UpdateMode } from "./port";
 import type { AskTimeoutSettings, SessionRefSettings, AutoArchiveSettings, ChangedFilesSettings, FoldWorkSettings, TurnNarrationSettings, WebAccessPatch, WebAccessSettings, SearxngProbe, DisplayCurrencyMode, DisplayCurrencySettings, ProgressWatchSettings, WorkspaceRoots, ReceiptSettings } from "./boundary";
 import { HttpError } from "./http_error";
 import { MockShell } from "./mock_shell";
@@ -146,6 +146,17 @@ export class MockBoundary extends MockShell {
   async saveSubagentClaims(optimistic: boolean): Promise<SubagentClaimsSettings> {
     this.claims = { ...this.claims, optimistic };
     return { ...this.claims };
+  }
+
+  private steerLimits: SubagentSteerSettings = { maxBytes: 16384, perMinute: 30, defaultMaxBytes: 16384, defaultPerMinute: 30, path: "/Users/you/.reasonix/config.toml" };
+
+  async subagentSteerSettings(): Promise<SubagentSteerSettings> {
+    return { ...this.steerLimits };
+  }
+
+  async saveSubagentSteerSettings(maxBytes: number, perMinute: number): Promise<SubagentSteerSettings> {
+    this.steerLimits = { ...this.steerLimits, maxBytes, perMinute };
+    return { ...this.steerLimits };
   }
 
   private plans: PlanApprovalSettings = { auto: false, path: "/Users/you/.reasonix/config.toml" };

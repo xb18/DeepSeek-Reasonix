@@ -67,15 +67,19 @@ func (s *SubagentStore) setLive(ref string, sess *sessionstore.Session) {
 	defer s.mu.Unlock()
 	if sess == nil {
 		delete(s.live, ref)
+		delete(s.steer.sent, ref)
 		return
 	}
-	s.live[ref] = sess
+	s.live[ref] = &liveRun{sess: sess}
 }
 
 func (s *SubagentStore) liveSession(ref string) *sessionstore.Session {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.live[ref]
+	if r := s.live[ref]; r != nil {
+		return r.sess
+	}
+	return nil
 }
 
 // checkOwner is the one rule for who may read a run: the conversation that

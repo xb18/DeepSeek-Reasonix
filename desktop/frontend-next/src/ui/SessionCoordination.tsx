@@ -3,6 +3,7 @@ import type { AgentPort } from "../port/port";
 import { Group } from "./Group";
 import { PeerMessages } from "./PeerMessages";
 import { SubagentClaims } from "./SubagentClaims";
+import { SubagentSteerLimits } from "./SubagentSteerLimits";
 import { WriteLease } from "./WriteLease";
 
 export function SessionCoordination({ port, onChanged }: { port: AgentPort; onChanged: () => void }) {
@@ -25,6 +26,12 @@ export function SessionCoordination({ port, onChanged }: { port: AgentPort; onCh
         hint={t("后台子代理写文件时如何占用工作区。默认严格：没有声明 write_paths 的子代理占住整个工作区，其他写入要等它结束。修改会重建运行时，任务运行期间无法变更。")}
       >
         <SubagentClaims port={port} onChanged={onChanged} />
+      </Group>
+      <Group id="subagent-steer"
+        title={t("给运行中子代理的指示")}
+        hint={t("你或模型在子代理还没做完时发给它的补充指示，在它下一次调用工具时读到。这里限制每条的大小和发送的频率，改动立即对正在运行的子代理生效。")}
+      >
+        <SubagentSteerLimits port={port} />
       </Group>
     </>
   );
