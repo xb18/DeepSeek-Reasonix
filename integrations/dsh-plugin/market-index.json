@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "title": { "en": "Reasonix", "zh": "Reasonix" },
+  "description": {
+    "en": "Run Reasonix as a subagent from DeepSeek Harness.",
+    "zh": "在 DeepSeek Harness 中把 Reasonix 作为子智能体运行。"
+  },
+  "plugins": [
+    {
+      "name": "dsh-plugin-reasonix",
+      "title": { "en": "Reasonix subagent", "zh": "Reasonix 子智能体" },
+      "description": {
+        "en": "Delegate tasks to Reasonix over the Agent Client Protocol. Configuration only, no code.",
+        "zh": "通过 Agent Client Protocol 把任务委派给 Reasonix。只有配置，没有代码。"
+      },
+      "author": "Reasonix",
+      "homepage": "https://github.com/esengine/DeepSeek-Reasonix/blob/studio/docs/DSH.md",
+      "repository": { "url": "https://github.com/esengine/DeepSeek-Reasonix", "directory": "integrations/dsh-plugin" },
+      "metadata": { "keywords": ["reasonix", "acp", "subagent", "deepseek"] },
+      "versions": [
+        {
+          "version": "0.0.0",
+          "publishTimestamp": 0,
+          "source": { "type": "git", "url": "https://github.com/esengine/DeepSeek-Reasonix", "commit": "0000000000000000000000000000000000000000", "path": "integrations/dsh-plugin" },
+          "engines": { "dsh": "0.0.0" }
+        }
+      ]
+    }
+  ]
+}
