@@ -16,6 +16,7 @@ import (
 	"reasonix/internal/base/i18n"
 	"reasonix/internal/contract/ablation"
 	"reasonix/internal/contract/config"
+	"reasonix/internal/contract/provider"
 	"reasonix/internal/contract/surface"
 	"reasonix/internal/contract/tool"
 	"reasonix/internal/ext/extension/providerext"
@@ -304,7 +305,7 @@ func (f *acpFactory) SessionConfigState(_ context.Context, p acp.SessionConfigSt
 		return acp.SessionConfigState{}, err
 	}
 	if strings.TrimSpace(ref) == "" {
-		return acp.SessionConfigState{}, fmt.Errorf("no default_model configured")
+		return acp.SessionConfigState{}, fmt.Errorf("%w: no default_model configured", provider.ErrNoProvider)
 	}
 	// Plugin-namespaced refs belong to extension sidecars: they never resolve
 	// through the config catalog, so their configured/current handling keys off
@@ -315,7 +316,7 @@ func (f *acpFactory) SessionConfigState(_ context.Context, p acp.SessionConfigSt
 		return acp.SessionConfigState{}, fmt.Errorf("unknown model %q", ref)
 	}
 	if ok && !entry.Configured() {
-		return acp.SessionConfigState{}, fmt.Errorf("model %q is not configured", ref)
+		return acp.SessionConfigState{}, fmt.Errorf("model %q %w", ref, provider.ErrKeyMissing)
 	}
 	currentModel := ref
 	entryDescription := ""

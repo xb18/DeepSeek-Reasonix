@@ -84,5 +84,5 @@ func newSessionError(method string, err error) *RPCError {
 	if errors.Is(err, ErrAdditionalDirectoriesDisabled) {
 		return additionalDirsError(method+": "+err.Error(), AdditionalDirsData{Code: codeAdditionalDirsOff})
 	}
-	return &RPCError{Code: ErrInternal, Message: method + ": " + err.Error()}
+	return sessionOpenError(method, err)
 }

@@ -30,6 +30,8 @@ const (
 	ErrMethodNotFound = -32601
 	ErrInvalidParams  = -32602
 	ErrInternal       = -32603
+	// ErrAuthRequired is the ACP schema's "Authentication required" code.
+	ErrAuthRequired = -32000
 )
 
 // TurnFailed is the TurnErrorData code of a session/prompt that failed after it

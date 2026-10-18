@@ -1,0 +1,2 @@
+- 变更：通过 ACP 连接时，模型缺少密钥或尚未配置提供方，新建会话返回协议规定的“需要认证”错误（-32000），客户端可据此引导运行 reasonix setup。关联 #13705。
+- Changed: Over ACP, opening a session with a keyless model or no provider now returns the protocol's "Authentication required" error (-32000) so clients can offer reasonix setup. Refs #13705.

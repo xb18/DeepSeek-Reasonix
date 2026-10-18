@@ -84,6 +84,16 @@ text-only, so it stays on the local encoding-preserving path and keeps its
 original charset. Without those client capabilities, the normal workspace
 tools run locally inside the Reasonix process.
 
+
+### Authentication
+
+`session/new` fails with the ACP "Authentication required" error (`-32000`) when
+the selected model has no API key or no provider is configured, per the [ACP schema](https://agentclientprotocol.com/protocol/v1/schema) and
+[authentication](https://agentclientprotocol.com/protocol/v1/authentication) pages:
+
+- the advertised `reasonix-setup` method is of type `terminal`, so a client runs `reasonix setup` interactively and then reconnects; it must not send `authenticate` for it;
+- provider keys are read from `<Reasonix home>/.env`, never from the host's environment variables, so an `env` block on the host side cannot supply one.
+
 ## Session lifecycle
 
 Each ACP session owns an independent Reasonix controller, workspace root, model,

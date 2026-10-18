@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"reasonix/internal/contract/provider"
 	"reasonix/internal/runtime/agent"
 	"reasonix/internal/session/control"
 	"reasonix/internal/state/sessioninbox"
@@ -31,6 +32,17 @@ func sessionLeaseBindError(method string, err error) *RPCError {
 		}
 	}
 	return &RPCError{Code: ErrInternal, Message: method + ": session lease: " + err.Error()}
+}
+
+// sessionOpenError answers a session that could not open: a model with no
+// credentials is the ACP "authentication required" error, which a client keys
+// on to offer the advertised setup method; anything else is internal.
+func sessionOpenError(method string, err error) *RPCError {
+	code := ErrInternal
+	if errors.Is(err, provider.ErrKeyMissing) || errors.Is(err, provider.ErrNoProvider) {
+		code = ErrAuthRequired
+	}
+	return &RPCError{Code: code, Message: method + ": " + err.Error()}
 }
 
 // sessionNew opens a session: it mints an id, builds the session's sink bound to
@@ -59,19 +71,19 @@ func (s *service) sessionNew(ctx context.Context, raw json.RawMessage) (any, err
 	}
 	cfgState, err := s.sessionConfigState(ctx, SessionConfigStateParams{Cwd: cwd})
 	if err != nil {
-		return nil, &RPCError{Code: ErrInternal, Message: "session/new: " + err.Error()}
+		return nil, sessionOpenError("session/new", err)
 	}
 	cfgState = withToolApprovalConfig(cfgState, control.ToolApprovalAsk)
 	runtimeState, err := s.sessionRuntimeState(ctx, SessionRuntimeStateParams{
 		Cwd: cwd, Model: cfgState.Model, RuntimeProfile: cfgState.RuntimeProfile,
 	})
 	if err != nil {
-		return nil, &RPCError{Code: ErrInternal, Message: "session/new: " + err.Error()}
+		return nil, sessionOpenError("session/new", err)
 	}
 
 	id, err := newSessionID()
 	if err != nil {
-		return nil, &RPCError{Code: ErrInternal, Message: "session/new: " + err.Error()}
+		return nil, sessionOpenError("session/new", err)
 	}
 
 	sink := newUpdateSink(s.conn, id)

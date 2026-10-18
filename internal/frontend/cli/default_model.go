@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"reasonix/internal/contract/config"
+	"reasonix/internal/contract/provider"
 	"reasonix/internal/ext/extension/providerext"
 )
 
@@ -38,7 +39,7 @@ func resolveModelForCLI(explicitRef string, cfg *config.Config) (ref string, fal
 		if !entry.Configured() {
 			// Provider keys resolve only from the Reasonix credentials file, so
 			// naming the variable alone sends users to their shell environment.
-			return "", false, fmt.Errorf("model %q has no API key: add %s=<key> to %s or run `reasonix setup` (shell environment variables are not read)", explicitRef, entry.APIKeyEnv, cfg.Roots().UserCredentialsPath())
+			return "", false, fmt.Errorf("model %q %w: add %s=<key> to %s or run `reasonix setup` (shell environment variables are not read)", explicitRef, provider.ErrKeyMissing, entry.APIKeyEnv, cfg.Roots().UserCredentialsPath())
 		}
 		return entry.Name + "/" + entry.Model, false, nil
 	}
