@@ -68,7 +68,6 @@ export function ModPreviewBlock({ mod }: { mod: ModPreview }) {
       <div className="risk">
         <span className="lb">{t("模块")}</span>
         <span className="dt" title={mod.sha256}>{mod.module} · {mod.sha256.slice(0, 12)}</span>
-        <span className="why">{t("更新会重新预览并需要重新确认：模块内容变了就是新的授权。")}</span>
       </div>
     </section>
   );

@@ -48,10 +48,9 @@ describe("the mod install preview", () => {
     expect(screen.getByText("brand_new_reason")).toBeTruthy();
   });
 
-  it("pins the exact bytes and says an update asks again", () => {
+  it("pins the exact bytes the module listing was read from", () => {
     render(<ModPreviewBlock mod={listed} />);
     expect(screen.getByText("hooks/index.js · 0123456789ab").getAttribute("title")).toBe(listed.sha256);
-    expect(screen.getByText(/更新会重新预览并需要重新确认/)).toBeTruthy();
   });
 
   it("appears under the candidate that carries a mod, and not under one without", () => {

@@ -1328,6 +1328,5 @@ export const EN_SETTINGS: Record<string, string> = {
   "没有找到导出的 register": "No exported register was found",
   "本应用不会触发的事件": "Events this app never raises",
   "模块": "Module",
-  "更新会重新预览并需要重新确认：模块内容变了就是新的授权。": "An update is previewed again and needs confirming again: changed module contents are a new authorisation.",
   "这是插件「{id}」的提问；回答它不会批准任何工具调用或权限。": "This is a question from the plugin \"{id}\"; answering it does not approve any tool call or permission.",
 };
