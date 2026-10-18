@@ -9,6 +9,8 @@ reviewed: 2026-10-17
 
 English | [中文](#中文)
 
+[Website](https://reasonix.io) · [Documentation](../../docs/DSH.md) · [Source](../../README.md)
+
 Use [Reasonix](../../README.md) as a subagent in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`). The package is configuration only: one patch layer that points Harness's `subagent-acp` provider at `reasonix acp` and exposes it to the model as a `reasonix` tool. It contains no code.
 
 ## Before you install
@@ -46,6 +48,8 @@ The provider version must equal your `dsh` version. This release pins `dsh` 0.2.
 ---
 
 ## 中文
+
+[官网](https://reasonix.io) · [文档](../../docs/DSH.md) · [源码](../../README.md)
 
 把 [Reasonix](https://github.com/esengine/DeepSeek-Reasonix) 作为子智能体接入 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）。本包只有配置，没有代码：一层补丁，让 Harness 的 `subagent-acp` 提供方去启动 `reasonix acp`，并以 `reasonix` 工具的形式暴露给模型。
 

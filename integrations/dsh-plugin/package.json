@@ -2,6 +2,8 @@
   "name": "dsh-plugin-reasonix",
   "version": "0.1.0",
   "description": "Use Reasonix as a subagent in DeepSeek Harness (dsh) through its ACP provider. Configuration only, no code.",
+  "homepage": "https://reasonix.io",
+  "author": "Reasonix",
   "keywords": [
     "dsh-plugin",
     "deepseek-harness",
