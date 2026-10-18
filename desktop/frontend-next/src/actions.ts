@@ -689,6 +689,8 @@ export const ACTIONS: UIAction[] = [
   { id: "session-ref.tokens", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
   { id: "session-ref.reset", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
   { id: "session.reference-match", kind: "view", target: "entity", proof: "interaction" },
+  { id: "mods.enabled", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
+  { id: "mods.budget", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
   { id: "progress-watch.pause", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
   { id: "progress-watch.rounds", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
   { id: "progress-watch.token-multiple", kind: "kernel-mutation", target: "none", proof: "authority-effect" },
