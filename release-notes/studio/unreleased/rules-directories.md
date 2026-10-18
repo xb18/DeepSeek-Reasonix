@@ -1,0 +1,2 @@
+- 新增：支持规则目录（.reasonix/rules、.claude/rules 和用户目录下的 rules），可用 paths: 限定到某些文件；不影响缓存前缀。关联 #9886。
+- Added: Rules directories (.reasonix/rules, .claude/rules and the user's rules folder), optionally scoped to files with paths:; the cache-stable prefix is untouched. Refs #9886.

@@ -47,7 +47,11 @@ func projectTurn(blocks []turnBlock, text, tail string) string {
 // to be written in, reversed.
 func (c *Controller) turnBlocksFor(source string, includeOwed bool, notes []string, plan bool, goal, goalStatus, responseLanguage, reasoningLanguage string) []turnBlock {
 	var blocks []turnBlock
+	var always, scoped string
 	if includeOwed {
+		if res, ok := c.loadRules(); ok {
+			always, scoped = c.rules.owedAlways(res), c.rules.owedScoped(res, c.skills.pathHits)
+		}
 		// Drained for a real turn only: a synthetic one must not consume what
 		// the user's next message is owed.
 		blocks = append(blocks,
@@ -55,6 +59,8 @@ func (c *Controller) turnBlocksFor(source string, includeOwed bool, notes []stri
 			turnBlock{currentDateTag, wrapTurnBlock(currentDateTag, c.date.owed())},
 			turnBlock{"available-skills", wrapTurnBlock("available-skills", c.skills.owedCatalog())},
 			turnBlock{"project-instructions", wrapTurnBlock("project-instructions", c.memory.owedInstructions())},
+			turnBlock{"project-rules", wrapTurnBlock("project-rules", always)},
+			turnBlock{"scoped-rules", wrapTurnBlock("scoped-rules", scoped)},
 			turnBlock{"mcp-prompt-failure", wrapTurnBlock("mcp-prompt-failure", c.mcp.promptFailures.owed())},
 			turnBlock{"refused-calls", c.refusedCallsBlock()},
 		)
@@ -166,6 +172,7 @@ func (c *Controller) settleTurnProjections() {
 	c.date.debt.settle()
 	c.skills.catalog.settle()
 	c.memory.instructions.settle()
+	c.rules.settle()
 	c.mcp.promptFailures.settle()
 	c.refused.settle()
 }

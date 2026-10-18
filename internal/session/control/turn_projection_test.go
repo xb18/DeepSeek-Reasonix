@@ -22,6 +22,8 @@ func TestTurnBlockOrderIsDeclared(t *testing.T) {
 		"current-date",
 		"available-skills",
 		"project-instructions",
+		"project-rules",
+		"scoped-rules",
 		"mcp-prompt-failure",
 		"refused-calls",
 		"scheduled-run",

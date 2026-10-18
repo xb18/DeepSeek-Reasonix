@@ -28,6 +28,8 @@ var TransientUserBlockTags = []string{
 	"available-skills",
 	"current-date",
 	"project-instructions",
+	"project-rules",
+	"scoped-rules",
 	"capability-route",
 	"interrupted-turn-recovery",
 	"execution-policy",

@@ -44,5 +44,6 @@ func (s *inboxEventSink) Emit(e event.Event) {
 		s.c.date.debt.forget()
 		s.c.skills.forgetDeliveredCatalog()
 		s.c.memory.forgetDeliveredInstructions()
+		s.c.rules.forget()
 	}
 }

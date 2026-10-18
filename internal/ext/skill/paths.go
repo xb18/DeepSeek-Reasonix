@@ -22,6 +22,10 @@ var ErrPathOutsideWorkspace = errors.New("path is outside the workspace")
 // freeing it.
 func (s Skill) PathGated() bool { return len(s.Paths)+len(s.InvalidPaths) > 0 }
 
+// ParsePaths is parsePathsFrontmatter for other declarers of `paths:` (rules):
+// one judgement of what the value means, not a copy per feature.
+func ParsePaths(raw string) (valid, invalid []string) { return parsePathsFrontmatter(raw) }
+
 // parsePathsFrontmatter splits a `paths:` value into usable globs and the
 // rejected ones, which doctor reports. Commas inside braces stay in one glob.
 func parsePathsFrontmatter(raw string) (valid, invalid []string) {
@@ -223,10 +227,18 @@ func (h *PathHits) Seen() []string {
 // a recorded path matches one of its globs. A nil set records nothing, so it
 // leaves every skill listed.
 func (h *PathHits) Eligible(sk Skill) bool {
-	if h == nil || !sk.PathGated() {
+	return h.EligibleGlobs(sk.Paths, sk.PathGated())
+}
+
+// EligibleGlobs is Eligible for anything that declares `paths:`: true when it
+// is not gated, or when a recorded path matches one of its globs. A gated
+// declaration with no usable glob matches nothing, so a typo hides the thing
+// rather than freeing it.
+func (h *PathHits) EligibleGlobs(globs []string, gated bool) bool {
+	if h == nil || !gated {
 		return true
 	}
-	key := strings.Join(sk.Paths, "\x00")
+	key := strings.Join(globs, "\x00")
 	h.mu.Lock()
 	if v, ok := h.verdicts.byKey[key]; ok {
 		h.mu.Unlock()
@@ -236,7 +248,7 @@ func (h *PathHits) Eligible(sk Skill) bool {
 	seen := h.sortedSeenLocked()
 	h.mu.Unlock()
 
-	v := matchesAny(sk.Paths, seen)
+	v := matchesAny(globs, seen)
 
 	h.mu.Lock()
 	if h.verdicts.gen == gen {

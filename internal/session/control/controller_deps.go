@@ -73,6 +73,7 @@ type controllerDeps struct {
 	// the reloadable stores) — the skills slice of the Capabilities concern. See
 	// skill.go.
 	skills              skillSet
+	rules               rulesSet
 	date                dateAnchor
 	skillRunner         skill.SubagentRunner
 	side                sideSet // see side_session.go
