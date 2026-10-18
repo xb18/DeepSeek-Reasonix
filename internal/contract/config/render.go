@@ -237,11 +237,7 @@ func RenderTOMLForScope(c *Config, scope RenderScope) string {
 	}
 
 	b.WriteString("[tools]\n")
-	if len(c.Tools.Enabled) == 0 {
-		b.WriteString("enabled = []   # empty = all built-in tools\n")
-	} else {
-		fmt.Fprintf(&b, "enabled = %s\n", renderStringArray(c.Tools.Enabled))
-	}
+	renderToolLists(&b, c, true)
 	fmt.Fprintf(&b, "bash_timeout_seconds = %d   # foreground safety cap; set 0 for no tool-local cap\n", c.BashTimeoutSeconds())
 	fmt.Fprintf(&b, "mcp_startup_timeout_seconds = %d   # background initialize + tools/list safety cap; per-plugin overrides may raise it\n", c.MCPStartupTimeoutSeconds())
 	fmt.Fprintf(&b, "mcp_call_timeout_seconds = %d   # default MCP call safety cap; per-plugin/tool overrides may raise it\n", c.MCPCallTimeoutSeconds())
@@ -541,16 +537,14 @@ func RenderTOMLProjectDelta(c *Config) string {
 	}
 
 	// [tools]
-	if len(c.Tools.Enabled) > 0 ||
+	if c.Tools.listsSet() ||
 		(c.Tools.BashTimeoutSeconds != nil && *c.Tools.BashTimeoutSeconds != 0) ||
 		(c.Tools.MCPStartupTimeoutSeconds != nil && *c.Tools.MCPStartupTimeoutSeconds > 0) ||
 		(c.Tools.MCPCallTimeoutSeconds != nil && *c.Tools.MCPCallTimeoutSeconds > 0) ||
 		c.Tools.ProtectChangedFiles != nil ||
 		c.Tools.BrowserTools != nil || c.Tools.MCPResources || c.Tools.any() {
 		b.WriteString("[tools]\n")
-		if len(c.Tools.Enabled) > 0 {
-			fmt.Fprintf(&b, "enabled = %s\n", renderStringArray(c.Tools.Enabled))
-		}
+		renderToolLists(&b, c, false)
 		if c.Tools.BashTimeoutSeconds != nil && *c.Tools.BashTimeoutSeconds != 0 {
 			fmt.Fprintf(&b, "bash_timeout_seconds = %d\n", *c.Tools.BashTimeoutSeconds)
 		}

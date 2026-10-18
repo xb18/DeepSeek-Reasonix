@@ -107,6 +107,7 @@ web_search  = true
 
 [tools]
 enabled = []   # 省略/为空 = 全部内置工具
+# disabled = ["web_fetch", "ask"]   # 按名称从每个请求里移除（框架工具和 MCP 工具也算）；模型仍去调用时会被拒绝并说明原因；被其他功能依赖的工具会保留，并给出警告；项目配置只能追加名称；设置里每个工具有开关；对之后新开的对话生效
 bash_timeout_seconds = 120   # 前台安全上限；设为 0 表示不设工具层超时
 protect_changed_files = true   # 模型读过或写过的文件之后被改动时，拒绝整文件覆盖
 browser_tools = true   # 内置浏览器工具；浏览器在第一次使用时才启动

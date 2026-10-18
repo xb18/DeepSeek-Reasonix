@@ -1,0 +1,2 @@
+- 新增：可以按名称关闭工具（[tools] disabled，设置里每个工具有开关），关闭后不再发给模型，调用会被拒绝；被其他功能依赖的保留并提示。关联 #8394。
+- Added: Tools can be turned off by name ([tools] disabled, a switch per tool in Settings): they leave every request and a call is refused; tools another feature needs stay, with a note. Refs #8394.

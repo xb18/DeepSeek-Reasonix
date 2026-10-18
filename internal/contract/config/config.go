@@ -1154,7 +1154,9 @@ type AgentConfig struct {
 
 // ToolsConfig selects which built-in tools are enabled. Empty means all of them.
 type ToolsConfig struct {
-	Enabled                  []string             `toml:"enabled"`
+	Enabled []string `toml:"enabled"`
+	// Disabled removes tools by name from every surface; a project file can only add to it.
+	Disabled                 []string             `toml:"disabled"`
 	BashTimeoutSeconds       *int                 `toml:"bash_timeout_seconds"`
 	MCPStartupTimeoutSeconds *int                 `toml:"mcp_startup_timeout_seconds"`
 	MCPCallTimeoutSeconds    *int                 `toml:"mcp_call_timeout_seconds"`

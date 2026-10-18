@@ -26,6 +26,7 @@ type heldScope struct {
 	autoSubmit     bool
 	writeLease     string
 	planApproval   string
+	toolsDisabled  []string
 	limits         agentLimits
 	goalAutoRetry  int
 	subagentClaims string
@@ -83,6 +84,7 @@ func holdUserScope(c *Config) heldScope {
 		autoSubmit:      c.AutoSubmit,
 		writeLease:      c.Agent.WriteLease,
 		planApproval:    c.Agent.PlanApproval,
+		toolsDisabled:   c.DisabledTools(),
 		limits:          holdAgentLimits(c),
 		goalAutoRetry:   c.Agent.GoalAutoRetry,
 		subagentClaims:  c.Agent.SubagentClaims,
@@ -224,6 +226,9 @@ func (h heldScope) narrow(c *Config, r Roots, root string, projectMeta toml.Meta
 		c.Agent.GoalAutoRetry = h.goalAutoRetry
 	}
 	h.narrowAgentLimits(c)
+	// A project can remove tools for its own sessions and never take one back.
+	c.Tools.Disabled = append(slices.Clone(h.toolsDisabled), c.Tools.Disabled...)
+	c.Tools.Disabled = c.DisabledTools()
 	if c.Agent.PlanApproval != h.planApproval {
 		c.ignoreProject("agent.plan_approval", c.Agent.PlanApproval, ProjectUserOnly)
 		c.Agent.PlanApproval = h.planApproval

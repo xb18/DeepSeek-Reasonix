@@ -483,6 +483,7 @@ func (b *builder) controller() (*control.Controller, error) {
 	router := t.roles.semanticRouter(t.sub, b.execProv, b.model.ref, b.model.entry.Price, t.caps.audit)
 	ctrl.WireCapabilityRouting(b.cfg.Plugins, t.caps.specs, router, t.caps.audit)
 	ctrl.SetCapabilityProxyRouting(true)
+	reportKeptTools(b.sink, t.reg.DisableTools(b.cfg.DisabledTools()))
 	// Every role setting sees one provider-visible surface, fixed before the
 	// snapshot freezes registry schemas for cache diagnostics.
 	if b.opts.Observe == nil {

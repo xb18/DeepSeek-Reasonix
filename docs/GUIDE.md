@@ -98,6 +98,7 @@ web_search  = true
 
 [tools]
 enabled = []   # omit/empty = all built-ins
+# disabled = ["web_fetch", "ask"]   # removed from every request by name, framework and MCP tools included; a call to one is refused with the reason; a tool another feature needs stays on and a warning says which; a project file can only add names; Settings has a switch per tool; applies to conversations opened afterwards
 bash_timeout_seconds = 120   # foreground safety cap; set 0 for no tool-local cap
 protect_changed_files = true   # refuse a whole-file write over a change made since the agent last read or wrote the file
 browser_tools = true   # built-in browser tools; the browser starts on first use

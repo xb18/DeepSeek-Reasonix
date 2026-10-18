@@ -138,6 +138,7 @@ var table = []Entry{
 	{ID: "agent.plan_mode_read_only_commands", Class: Guarded, Effect: OnOpen},
 	{ID: "providers", Class: Guarded, Effect: OnOpen, Secret: true},
 	{ID: "tools.enabled", Class: Guarded, Effect: OnOpen},
+	{ID: "tools.disabled", Class: Guarded, Effect: OnOpen},
 	{ID: "tools.bash_timeout_seconds", Class: Preference, Effect: OnOpen},
 	{ID: "tools.mcp_startup_timeout_seconds", Class: Preference, Effect: OnOpen},
 	{ID: "tools.mcp_call_timeout_seconds", Class: Preference, Effect: OnOpen},

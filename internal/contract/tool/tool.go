@@ -374,6 +374,9 @@ type Registry struct {
 	canon       map[string]json.RawMessage
 	suspended   map[string]bool
 	disabledMCP map[string]bool
+	// disabledTools holds the names the user removed with [tools].disabled; Add
+	// refuses them so no later registration path brings one back.
+	disabledTools map[string]bool
 	// disabledMCPByServer keeps per-server policy so aliases can be replaced or cleared.
 	disabledMCPByServer map[string]map[string]bool
 	// heldMCP is the per-server set of tools withheld until their changed
@@ -488,7 +491,7 @@ func (r *Registry) Add(t Tool) {
 	defer r.mu.Unlock()
 
 	name := t.Name()
-	if r.suspendedLocked(name) {
+	if r.suspendedLocked(name) || r.refusesLocked(t) {
 		return
 	}
 	if _, ok := r.tools[name]; !ok {

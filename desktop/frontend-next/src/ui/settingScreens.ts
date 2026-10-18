@@ -13,6 +13,7 @@ export const SETTING_SCREEN: Record<string, string> = {
   "desktop.default_tool_approval_mode": "tools:approval",
   "agent.plan_approval": "tools:plan-approval",
   "permissions.mode": "tools:approval",
+  "tools.disabled": "tools:tool-list",
   "permissions.allow": "tools:rules",
   "permissions.ask": "tools:rules",
   "permissions.deny": "tools:rules",

@@ -22,6 +22,9 @@ type updateGoal struct{}
 
 func (updateGoal) Name() string { return "update_goal" }
 
+// HostRequiredBy says why the tool cannot be removed by name: a running goal can only be completed or stopped through it.
+func (updateGoal) HostRequiredBy() string { return tool.FeatureGoalMode }
+
 func (updateGoal) Description() string {
 	return "Report this turn's disposition for the active goal. Call it at the end of every goal turn instead of using prose markers: `continue` (work is ongoing — give a concrete next_action), `complete` (the request is fully done, output format and constraints satisfied, and verification was attempted or reported unavailable), or `blocked` (only the user can unblock: missing user-only information, an irreversible/externally visible operation, or changed scope). The host validates your claim against Delivery acceptance criteria and decides whether to continue automatically."
 }

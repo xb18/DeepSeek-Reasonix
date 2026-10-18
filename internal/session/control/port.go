@@ -292,6 +292,8 @@ type RuntimeSettings interface {
 	SaveWriteLeaseSettings(optimistic bool) error
 	PlanApprovalSettings() PlanApprovalSettings
 	SavePlanApprovalSettings(auto bool) error
+	ToolSettings() ToolSettings
+	SaveToolDisabled(name string, disabled bool) error
 	CompactionSettings() CompactionSettings
 	SaveCompactionSettings(softLimitTokens int) error
 	DisplayCurrencySettings() DisplayCurrencySettings

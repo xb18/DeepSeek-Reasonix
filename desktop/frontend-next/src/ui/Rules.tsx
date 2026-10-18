@@ -451,3 +451,6 @@ function Granted({ rules, busy, onRevoke }: { rules: string[]; busy: string; onR
     </section>
   );
 }
+
+// The tool switches sit beside the rules that govern the same tools.
+export { ToolList } from "./ToolList";
