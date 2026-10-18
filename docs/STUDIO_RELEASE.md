@@ -25,6 +25,7 @@ Workflow: `.github/workflows/release-studio.yml`. Trigger: push of a `studio-vX.
 | P3 | `release-notes/studio/X.Y.Z.md` is in that commit and passes `make check`. | `git cat-file -e <sha>:release-notes/studio/X.Y.Z.md` |
 | P4 | The version is valid semver and above the latest tag. | `git tag -l 'studio-v*' --sort=-v:refname \| head -1` |
 | P5 | The Windows signing mode is known. `true` signs with Certum and blocks the release if signing fails; anything else ships unsigned and the body says so. | `gh variable list \| grep STUDIO_SIGNING` |
+| P6 | The DeepSeek Harness market index pins the current `integrations/dsh-plugin`. On failure run `node scripts/dsh-market-index.mjs --pin` and commit the index with the release notes. | `node scripts/dsh-market-index.mjs --check` |
 
 ## 3. Steps
 

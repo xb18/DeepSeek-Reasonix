@@ -1,6 +1,9 @@
 {
   "format": 1,
-  "title": { "en": "Reasonix", "zh": "Reasonix" },
+  "title": {
+    "en": "Reasonix",
+    "zh": "Reasonix"
+  },
   "description": {
     "en": "Run Reasonix as a subagent from DeepSeek Harness.",
     "zh": "在 DeepSeek Harness 中把 Reasonix 作为子智能体运行。"
@@ -8,23 +11,73 @@
   "plugins": [
     {
       "name": "dsh-plugin-reasonix",
-      "title": { "en": "Reasonix subagent", "zh": "Reasonix 子智能体" },
+      "title": {
+        "en": "Reasonix subagent",
+        "zh": "Reasonix 子智能体"
+      },
       "description": {
         "en": "Delegate tasks to Reasonix over the Agent Client Protocol. Configuration only, no code.",
         "zh": "通过 Agent Client Protocol 把任务委派给 Reasonix。只有配置，没有代码。"
       },
       "author": "Reasonix",
-      "homepage": "https://github.com/esengine/DeepSeek-Reasonix/blob/studio/docs/DSH.md",
-      "repository": { "url": "https://github.com/esengine/DeepSeek-Reasonix", "directory": "integrations/dsh-plugin" },
-      "metadata": { "keywords": ["reasonix", "acp", "subagent", "deepseek"] },
+      "homepage": "https://reasonix.io",
+      "repository": {
+        "url": "https://github.com/esengine/DeepSeek-Reasonix",
+        "directory": "integrations/dsh-plugin"
+      },
+      "metadata": {
+        "category": "agents",
+        "labels": [
+          "reasonix",
+          "deepseek"
+        ],
+        "keywords": [
+          "reasonix",
+          "acp",
+          "subagent",
+          "deepseek",
+          "delegation"
+        ]
+      },
       "versions": [
         {
-          "version": "0.0.0",
-          "publishTimestamp": 0,
-          "source": { "type": "git", "url": "https://github.com/esengine/DeepSeek-Reasonix", "commit": "0000000000000000000000000000000000000000", "path": "integrations/dsh-plugin" },
-          "engines": { "dsh": "0.0.0" }
+          "version": "0.1.0",
+          "publishTimestamp": 1792298074,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/esengine/DeepSeek-Reasonix",
+            "commit": "3e0d957ac9ee9709052c77b2569c98cf3e9b0b1c",
+            "path": "integrations/dsh-plugin"
+          },
+          "engines": {
+            "dsh": "0.2.1-rc.2"
+          }
         }
       ]
     }
-  ]
+  ],
+  "metadata": {
+    "categories": {
+      "agents": {
+        "title": {
+          "en": "Agents and orchestration",
+          "zh": "智能体与编排"
+        }
+      }
+    },
+    "labels": {
+      "reasonix": {
+        "title": {
+          "en": "Reasonix",
+          "zh": "Reasonix"
+        }
+      },
+      "deepseek": {
+        "title": {
+          "en": "DeepSeek",
+          "zh": "DeepSeek"
+        }
+      }
+    }
+  }
 }

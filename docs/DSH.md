@@ -10,6 +10,8 @@ reviewed: 2026-10-17
 <a href="./ACP.md">ACP</a>
 &nbsp;·&nbsp;
 <a href="https://github.com/deepseek-ai/deepseek-harness/tree/main/packages/subagent/subagent-acp">DSH subagent-acp</a>
+&nbsp;·&nbsp;
+<a href="https://reasonix.io">Reasonix website</a>
 
 ## Purpose
 
@@ -64,6 +66,21 @@ dsh plugin --profile <profile> add github:esengine/DeepSeek-Reasonix#path:/integ
 ```
 
 The bundle pins `@deepseek-ai/dsh-subagent-acp` and `dsh` to the same version (`0.2.1-rc.2` today) and uses `permission: reject`. Change the policy in your own `cordis.patch.yml`, never in the package.
+
+## Finding it in Discover
+
+DSH ships an optional "Custom plugin markets" feature with no default index; a user adds index URLs themselves. This repository publishes one:
+
+1. In the DSH Web UI open Plugins, select More beside Experimental plugins and switch on Custom plugin markets.
+2. In the Discover tab add this index URL:
+
+```text
+https://raw.githubusercontent.com/esengine/DeepSeek-Reasonix/studio/integrations/dsh-plugin/market-index.json
+```
+
+3. Select "Reasonix subagent" and install. The entry page shows the author, the website, the source repository and the exact pinned commit.
+
+The index entry pins a commit, so it is re-pinned whenever the package changes (see the Studio release runbook).
 
 ## Configuration reference
 
